@@ -1,0 +1,1447 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Rastreador de Sanciones RGPD · Consultoría protección de datos</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@300;400;500;600&family=IBM+Plex+Serif:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --plum:        #814e83;
+  --plum-deep:   #60345e;
+  --plum-darker: #4a2648;
+  --gold:        #ffe855;
+  --gold-mid:    #fcc123;
+  --gold-dark:   #b18a20;
+  --blush:       #dca0b5;
+  --rose:        #ca7191;
+  --magenta:     #b33f76;
+  --green:       #1a7a4a;
+  --green-light: #22a860;
+  --amber:       #b18a20;
+  --red:         #b83232;
+  --red-light:   #d44444;
+  --orange:      #c25a1a;
+  --bg:          #f9f5fa;
+  --surface:     #ffffff;
+  --surface2:    #f3edf5;
+  --surface3:    #ecddf0;
+  --border:      rgba(96,52,94,0.13);
+  --border-med:  rgba(96,52,94,0.22);
+  --text:        #2e1430;
+  --text-mid:    #523658;
+  --text-muted:  #7a5080;
+  --text-dim:    #aa88b0;
+  --shadow:    0 1px 4px rgba(96,52,94,0.09), 0 0 0 1px rgba(96,52,94,0.07);
+  --shadow-md: 0 4px 20px rgba(96,52,94,0.12), 0 0 0 1px rgba(96,52,94,0.08);
+  --r4: 4px; --r6: 6px; --r8: 8px;
+  --font-mono: 'IBM Plex Mono', monospace;
+  --font-sans: 'IBM Plex Sans', sans-serif;
+  --font-serif: 'IBM Plex Serif', serif;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body {
+  background: var(--bg); color: var(--text);
+  font-family: var(--font-sans);
+  font-size: 13.5px; line-height: 1.6; min-height: 100vh;
+}
+body::before {
+  content: ''; position: fixed; inset: 0; pointer-events: none; z-index: 0;
+  background:
+    radial-gradient(ellipse at 15% 0%, rgba(179,63,118,0.055) 0%, transparent 55%),
+    radial-gradient(ellipse at 85% 5%, rgba(255,232,85,0.04) 0%, transparent 45%),
+    radial-gradient(ellipse at 50% 100%, rgba(129,78,131,0.04) 0%, transparent 60%);
+}
+
+/* ── TOP BAR ── */
+.topbar {
+  position: sticky; top: 0; z-index: 100;
+  background: var(--surface); border-bottom: 2px solid var(--plum-deep);
+  padding: 0 40px; display: flex; align-items: center; justify-content: space-between;
+  height: 54px; box-shadow: 0 2px 8px rgba(96,52,94,0.08);
+}
+.brand { display: flex; align-items: center; gap: 12px; }
+.brand-mark {
+  width: 32px; height: 32px;
+  background: linear-gradient(135deg, var(--plum-deep) 0%, var(--plum) 100%);
+  border-radius: var(--r4); display: flex; align-items: center; justify-content: center;
+  font-family: var(--font-mono); font-size: 0.62rem; font-weight: 600;
+  color: var(--gold); letter-spacing: -0.5px; flex-shrink: 0;
+}
+.brand-name { font-family: var(--font-serif); font-size: 1.05rem; font-weight: 600; color: var(--plum-deep); letter-spacing: -0.3px; }
+.brand-sep { width: 1px; height: 22px; background: var(--border-med); margin: 0 4px; }
+.brand-norm { font-family: var(--font-mono); font-size: 0.7rem; color: var(--text-muted); letter-spacing: 1px; }
+.vpill {
+  font-size: 0.65rem; font-family: var(--font-mono);
+  background: rgba(129,78,131,0.1); color: var(--plum);
+  border: 1px solid rgba(129,78,131,0.25);
+  padding: 4px 10px; border-radius: 3px; letter-spacing: 0.5px;
+}
+
+/* ── LAYOUT ── */
+.wrap { position: relative; z-index: 1; max-width: 1040px; margin: 0 auto; padding: 36px 32px 80px; }
+
+/* ── PAGE HEADER ── */
+header { margin-bottom: 32px; display: flex; align-items: flex-start; justify-content: space-between; flex-wrap: wrap; gap: 1rem; }
+.page-eyebrow { font-size: 0.68rem; font-family: var(--font-mono); color: var(--plum); letter-spacing: 2px; text-transform: uppercase; margin-bottom: 8px; }
+h1 { font-family: var(--font-serif); font-size: clamp(1.4rem, 3vw, 2rem); font-weight: 600; color: var(--plum-darker); line-height: 1.15; margin-bottom: 8px; }
+h1 span { color: var(--plum); }
+.subtitle { color: var(--text-mid); font-size: 0.88rem; line-height: 1.65; }
+
+/* ── PANEL ── */
+.panel { background: var(--surface); border: 1px solid var(--border); border-radius: var(--r8); box-shadow: var(--shadow); overflow: hidden; margin-bottom: 16px; }
+.panel-header { background: var(--surface2); border-bottom: 1px solid var(--border); padding: 11px 16px; display: flex; align-items: center; justify-content: space-between; }
+.panel-title { font-size: 0.78rem; font-weight: 600; color: var(--plum-deep); letter-spacing: 0.3px; display: flex; align-items: center; gap: 8px; }
+.panel-body { padding: 18px 16px; }
+.plabel { font-size: 0.68rem; font-family: var(--font-mono); color: var(--plum); letter-spacing: 2px; text-transform: uppercase; margin-bottom: 10px; display: block; }
+
+/* ── STATS ── */
+.stats { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; margin-bottom: 24px; }
+.stat { background: var(--surface); border: 1px solid var(--border); border-radius: var(--r8); padding: 14px 16px; box-shadow: var(--shadow); position: relative; overflow: hidden; }
+.stat::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; background: var(--plum); }
+.stat.s2::before { background: var(--gold-mid); }
+.stat.s3::before { background: var(--rose); }
+.stat.s4::before { background: var(--plum-deep); }
+.slbl { font-size: 0.68rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 4px; font-family: var(--font-mono); }
+.sval { font-family: var(--font-mono); font-size: 1.7rem; font-weight: 600; color: var(--plum-deep); line-height: 1; margin-bottom: 3px; }
+.stat.s2 .sval { color: var(--amber); }
+.stat.s3 .sval { color: var(--rose); }
+.stat.s4 .sval { color: var(--plum); }
+
+/* ── TABS ── */
+.tabs { display: flex; gap: 0; border-bottom: 2px solid var(--border); margin-bottom: 24px; flex-wrap: wrap; }
+.tab {
+  padding: 10px 18px; font-size: 0.82rem; font-weight: 500; color: var(--text-muted);
+  border: none; background: none; cursor: pointer;
+  border-bottom: 2px solid transparent; margin-bottom: -2px;
+  transition: color .15s, border-color .15s; font-family: var(--font-sans);
+}
+.tab:hover { color: var(--plum); }
+.tab.active { color: var(--plum-deep); border-bottom-color: var(--plum-deep); font-weight: 600; }
+
+/* ── SEARCH ROW ── */
+.srow { display: flex; gap: 8px; margin-bottom: 10px; }
+.srow input {
+  flex: 1; background: var(--bg); border: 1px solid var(--border-med);
+  border-radius: var(--r6); padding: 9px 14px;
+  font-family: var(--font-mono); font-size: 0.85rem; color: var(--text);
+  outline: none; transition: border-color .15s, box-shadow .15s;
+}
+.srow input::placeholder { color: var(--text-dim); }
+.srow input:focus { border-color: var(--plum); box-shadow: 0 0 0 3px rgba(129,78,131,0.1); }
+.sbtn {
+  background: var(--plum-deep); color: #fff; border: none; border-radius: var(--r6);
+  padding: 9px 18px; font-family: var(--font-mono); font-size: 0.8rem; font-weight: 600;
+  cursor: pointer; white-space: nowrap; transition: background .15s;
+}
+.sbtn:hover { background: var(--plum-darker); }
+.sbtn:disabled { opacity: 0.45; cursor: not-allowed; }
+.abtn {
+  background: transparent; color: var(--plum); border: 1px solid var(--border-med);
+  border-radius: var(--r6); padding: 9px 14px;
+  font-family: var(--font-mono); font-size: 0.75rem; cursor: pointer; white-space: nowrap;
+  transition: background .15s, border-color .15s;
+}
+.abtn:hover { background: var(--surface2); border-color: var(--plum); }
+
+/* ── FILTERS ── */
+.frow { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+.frow select {
+  background: var(--bg); border: 1px solid var(--border-med); border-radius: var(--r6);
+  padding: 7px 10px; font-family: var(--font-mono); font-size: 0.75rem; color: var(--text);
+  outline: none; cursor: pointer; flex: 1; min-width: 115px;
+  transition: border-color .15s;
+}
+.frow select:focus { border-color: var(--plum); box-shadow: 0 0 0 3px rgba(129,78,131,0.1); }
+.sort-grp { display: flex; gap: 5px; align-items: center; flex-shrink: 0; }
+.slabel { font-family: var(--font-mono); font-size: 0.68rem; color: var(--text-muted); white-space: nowrap; }
+.sortbtn {
+  font-family: var(--font-mono); font-size: 0.68rem; padding: 6px 10px;
+  border: 1px solid var(--border-med); border-radius: var(--r6);
+  background: transparent; color: var(--text-muted); cursor: pointer; transition: all .15s;
+}
+.sortbtn.active { background: var(--plum-deep); border-color: var(--plum-deep); color: #fff; }
+
+/* ── MODE BUTTONS ── */
+.mode-row { display: flex; gap: 4px; margin-bottom: 10px; }
+.mbtn {
+  font-family: var(--font-mono); font-size: 0.72rem; padding: 5px 14px;
+  border-radius: var(--r6); border: 1px solid var(--border-med);
+  background: transparent; color: var(--text-muted); cursor: pointer; transition: all .15s;
+}
+.mbtn.active { background: var(--plum-deep); border-color: var(--plum-deep); color: #fff; }
+.mbtn.active-s { background: rgba(129,78,131,0.12); border-color: var(--plum); color: var(--plum-deep); }
+
+/* ── SEMANTIC PANEL ── */
+.sem-panel {
+  background: var(--surface); border: 1px solid var(--border);
+  border-left: 3px solid var(--plum);
+  border-radius: var(--r8); padding: 18px 20px; margin-bottom: 16px;
+  display: none; box-shadow: var(--shadow);
+}
+.sem-label {
+  font-family: var(--font-mono); font-size: 0.68rem; color: var(--plum);
+  letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 10px;
+  display: flex; align-items: center; gap: 8px;
+}
+.ai-badge {
+  background: rgba(129,78,131,0.1); color: var(--plum-deep);
+  border: 1px solid rgba(129,78,131,0.25);
+  padding: 1px 8px; border-radius: 3px; font-size: 0.65rem; letter-spacing: 0.5px;
+}
+.sem-row { display: flex; gap: 8px; }
+.sem-row textarea {
+  flex: 1; background: var(--bg); border: 1px solid var(--border-med);
+  border-radius: var(--r6); padding: 10px 14px;
+  font-family: var(--font-sans); font-size: 0.85rem; color: var(--text);
+  outline: none; resize: none; height: 72px; line-height: 1.5;
+  transition: border-color .15s, box-shadow .15s;
+}
+.sem-row textarea::placeholder { color: var(--text-dim); }
+.sem-row textarea:focus { border-color: var(--plum); box-shadow: 0 0 0 3px rgba(129,78,131,0.1); }
+.sem-btn {
+  background: var(--plum); color: #fff; border: none; border-radius: var(--r6);
+  padding: 10px 16px; font-family: var(--font-mono); font-size: 0.75rem; font-weight: 600;
+  cursor: pointer; white-space: nowrap; align-self: flex-end; transition: background .15s;
+}
+.sem-btn:hover { background: var(--plum-deep); }
+.sem-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+.sem-key { margin-top: 8px; }
+.sem-key input {
+  width: 100%; background: var(--bg); border: 1px solid var(--border-med);
+  border-radius: var(--r6); padding: 8px 12px;
+  font-family: var(--font-mono); font-size: 0.78rem; color: var(--text); outline: none;
+  transition: border-color .15s;
+}
+.sem-key input:focus { border-color: var(--plum); box-shadow: 0 0 0 3px rgba(129,78,131,0.1); }
+.sem-hint { font-size: 0.75rem; color: var(--text-muted); margin-top: 8px; line-height: 1.55; }
+.chips { display: flex; gap: 5px; flex-wrap: wrap; margin-top: 10px; }
+.chip {
+  font-size: 0.72rem; color: var(--plum-deep);
+  background: rgba(129,78,131,0.07); border: 1px solid rgba(129,78,131,0.2);
+  border-radius: 20px; padding: 3px 10px; cursor: pointer; transition: all .15s;
+}
+.chip:hover { background: rgba(129,78,131,0.15); border-color: var(--plum); }
+
+/* ── PROVIDER ROW ── */
+.provider-row { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; flex-wrap: wrap; }
+.prov-label { font-family: var(--font-mono); font-size: 0.68rem; color: var(--text-muted); white-space: nowrap; letter-spacing: 0.5px; }
+.provider-row select {
+  flex: 1; background: var(--bg); border: 1px solid var(--border-med);
+  border-radius: var(--r6); padding: 7px 10px;
+  font-family: var(--font-mono); font-size: 0.75rem; color: var(--text); outline: none; cursor: pointer;
+  transition: border-color .15s;
+}
+.provider-row select:focus { border-color: var(--plum); box-shadow: 0 0 0 3px rgba(129,78,131,0.1); }
+
+/* ── RESULT CARDS ── */
+.rlabel { font-family: var(--font-mono); font-size: 0.68rem; color: var(--plum); letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 12px; }
+.results { display: flex; flex-direction: column; gap: 10px; }
+.empty { text-align: center; padding: 4rem 2rem; color: var(--text-dim); }
+.empty .ico { font-size: 2rem; margin-bottom: 1rem; opacity: 0.4; }
+.empty p { font-size: 0.88rem; line-height: 1.7; }
+
+.card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--r8); overflow: hidden; transition: border-color .15s, box-shadow .15s; box-shadow: var(--shadow); }
+.card:hover { border-color: var(--plum); box-shadow: var(--shadow-md); }
+.card.open { border-color: var(--plum-deep); box-shadow: var(--shadow-md); }
+.csum { padding: 14px 18px; cursor: pointer; display: flex; gap: 14px; align-items: flex-start; }
+.dfecha { flex-shrink: 0; text-align: center; background: var(--surface2); border-radius: var(--r6); padding: 8px 10px; min-width: 60px; border: 1px solid var(--border); }
+.fmes { font-family: var(--font-mono); font-size: 0.62rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.8px; }
+.fanyo { font-family: var(--font-mono); font-size: 1.1rem; font-weight: 600; color: var(--plum-deep); line-height: 1.1; }
+.cbody { flex: 1; min-width: 0; }
+.cmeta { display: flex; align-items: center; gap: 5px; flex-wrap: wrap; margin-bottom: 6px; }
+.badge {
+  font-family: var(--font-mono); font-size: 0.62rem; font-weight: 600;
+  letter-spacing: 0.5px; text-transform: uppercase; padding: 2px 8px;
+  border-radius: 3px; white-space: nowrap; display: inline-block;
+}
+.ba { background: rgba(129,78,131,0.1); color: var(--plum-deep); border: 1px solid rgba(129,78,131,0.25); }
+.bb { background: rgba(96,52,94,0.08); color: var(--text-mid); border: 1px solid var(--border-med); }
+.bc { background: rgba(179,63,118,0.08); color: var(--magenta); border: 1px solid rgba(179,63,118,0.2); }
+.bd { background: rgba(26,122,74,0.1); color: var(--green); border: 1px solid rgba(26,122,74,0.25); }
+.be { background: rgba(194,90,26,0.1); color: var(--orange); border: 1px solid rgba(194,90,26,0.25); }
+.bsec { background: var(--surface2); color: var(--text-muted); border: 1px solid var(--border); }
+.bleve { background: rgba(177,138,32,0.1); color: #7a5800; border: 1px solid rgba(177,138,32,0.3); }
+.bgrave { background: rgba(194,90,26,0.1); color: var(--orange); border: 1px solid rgba(194,90,26,0.3); }
+.bmuy { background: rgba(184,50,50,0.08); color: var(--red); border: 1px solid rgba(184,50,50,0.25); }
+.baut-garante { background: rgba(26,122,74,0.1); color: var(--green); border: 1px solid rgba(26,122,74,0.25); }
+.baut-ap { background: rgba(194,90,26,0.1); color: var(--orange); border: 1px solid rgba(194,90,26,0.25); }
+.baut-dt { background: rgba(129,78,131,0.08); color: var(--plum); border: 1px solid rgba(129,78,131,0.2); }
+.cemp { font-size: 0.92rem; font-weight: 600; color: var(--text); margin-bottom: 3px; }
+.ctip { font-size: 0.78rem; color: var(--text-muted); }
+.artchips { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 6px; }
+.artchip { display: inline-flex; align-items: center; gap: 4px; background: var(--surface2); border: 1px solid var(--border); border-radius: 20px; padding: 2px 8px; }
+.artnum { font-family: var(--font-mono); font-size: 0.62rem; font-weight: 700; color: var(--plum); }
+.artname { font-size: 0.68rem; color: var(--text-muted); }
+.cright { flex-shrink: 0; text-align: right; }
+.cimp { font-family: var(--font-mono); font-size: 1rem; font-weight: 700; color: var(--plum-deep); }
+.cimp.ap { font-size: 0.78rem; color: var(--text-dim); font-weight: 400; }
+.cicon { font-size: 0.7rem; color: var(--text-dim); margin-top: 6px; display: block; font-family: var(--font-mono); }
+
+/* ── CARD DETAIL ── */
+.cdet { display: none; padding: 0 18px 18px; border-top: 1px solid var(--border); }
+.card.open .cdet { display: block; }
+.dsec { margin-top: 14px; }
+.dstitle { font-family: var(--font-mono); font-size: 0.62rem; letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 6px; font-weight: 600; }
+.dstitle.w { color: var(--red); }
+.dstitle.y { color: var(--orange); }
+.dstitle.g { color: var(--green); }
+.dblock { background: var(--bg); border-radius: var(--r6); padding: 10px 14px; margin-top: 6px; font-size: 0.82rem; line-height: 1.7; color: var(--text-mid); }
+.dblock.w { border-left: 3px solid var(--red); }
+.dblock.y { border-left: 3px solid var(--orange); }
+.dblock.g { border-left: 3px solid var(--green); font-family: var(--font-mono); font-size: 0.72rem; color: var(--green); line-height: 1.65; }
+.dmeta { display: flex; gap: 20px; flex-wrap: wrap; margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--border); }
+.dmi { font-size: 0.75rem; }
+.dmk { color: var(--text-dim); font-family: var(--font-mono); font-size: 0.62rem; text-transform: uppercase; letter-spacing: 0.8px; display: block; margin-bottom: 2px; }
+.dmv { color: var(--text-mid); font-weight: 500; }
+.dlinks { display: flex; gap: 6px; margin-top: 12px; flex-wrap: wrap; }
+.dlbtn {
+  font-family: var(--font-mono); font-size: 0.68rem; color: var(--plum);
+  background: none; border: 1px solid rgba(129,78,131,0.3); padding: 5px 12px;
+  border-radius: var(--r4); cursor: pointer; text-decoration: none; display: inline-block;
+  transition: background .15s, border-color .15s;
+}
+.dlbtn:hover { background: var(--surface2); border-color: var(--plum); }
+.warn-note {
+  margin-top: 10px; font-size: 0.68rem; color: var(--text-dim); font-family: var(--font-mono);
+  padding: 6px 10px; background: rgba(177,138,32,0.07);
+  border-radius: var(--r4); border-left: 2px solid rgba(177,138,32,0.35);
+}
+
+/* ── SEMANTIC ANALYSIS RESULT ── */
+.sem-note {
+  font-family: var(--font-mono); font-size: 0.68rem; color: var(--plum);
+  background: rgba(129,78,131,0.07); border-radius: var(--r6); padding: 7px 12px;
+  margin-bottom: 12px; border-left: 3px solid var(--plum);
+}
+.sem-analysis {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--r8); padding: 16px 18px; margin-bottom: 16px; box-shadow: var(--shadow);
+}
+.risk-badge { font-family: var(--font-mono); font-size: 0.62rem; font-weight: 700; padding: 3px 10px; border-radius: 3px; text-transform: uppercase; letter-spacing: 0.5px; }
+.risk-alto { background: rgba(184,50,50,0.1); color: var(--red); border: 1px solid rgba(184,50,50,0.25); }
+.risk-medio { background: rgba(194,90,26,0.1); color: var(--orange); border: 1px solid rgba(194,90,26,0.3); }
+.risk-bajo { background: rgba(26,122,74,0.1); color: var(--green); border: 1px solid rgba(26,122,74,0.25); }
+
+/* ── TRENDS ── */
+.tgrid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.tcard { background: var(--surface); border: 1px solid var(--border); border-radius: var(--r8); padding: 16px 18px; box-shadow: var(--shadow); }
+.ttitle { font-family: var(--font-mono); font-size: 0.68rem; color: var(--plum); letter-spacing: 1.2px; text-transform: uppercase; margin-bottom: 14px; font-weight: 600; }
+.brow { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+.blbl { font-size: 0.75rem; color: var(--text-mid); width: 145px; flex-shrink: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.btrack { flex: 1; height: 5px; background: var(--surface2); border-radius: 3px; overflow: hidden; }
+.bfill { height: 100%; border-radius: 3px; background: var(--plum); transition: width 0.5s ease; }
+.bfill.p { background: var(--rose); }
+.bfill.g { background: var(--gold-mid); }
+.bfill.i { background: var(--plum-deep); }
+.bval { font-family: var(--font-mono); font-size: 0.68rem; color: var(--text-dim); width: 60px; text-align: right; flex-shrink: 0; }
+
+/* ── LIVE TAB ── */
+.live-panel { padding: 0; }
+.live-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 1rem; margin-bottom: 14px; flex-wrap: wrap; }
+.live-title { font-family: var(--font-serif); font-size: 1rem; font-weight: 600; color: var(--plum-deep); margin-bottom: 4px; }
+.live-sub { font-size: 0.75rem; color: var(--text-muted); line-height: 1.5; max-width: 600px; }
+.live-btn {
+  background: var(--plum-deep); color: #fff; border: none; border-radius: var(--r6);
+  padding: 9px 18px; font-family: var(--font-mono); font-size: 0.78rem; font-weight: 600;
+  cursor: pointer; white-space: nowrap; transition: background .15s; flex-shrink: 0;
+}
+.live-btn:hover { background: var(--plum-darker); }
+.live-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+.live-filters { display: flex; gap: 6px; margin-bottom: 14px; flex-wrap: wrap; }
+.lfbtn {
+  font-family: var(--font-mono); font-size: 0.68rem; padding: 5px 12px;
+  border-radius: var(--r6); border: 1px solid var(--border-med);
+  background: transparent; color: var(--text-muted); cursor: pointer; transition: all .15s;
+}
+.lfbtn.active { background: var(--plum-deep); border-color: var(--plum-deep); color: #fff; }
+.live-card {
+  background: var(--surface); border: 1px solid var(--border); border-radius: var(--r8);
+  padding: 16px 18px; margin-bottom: 10px; box-shadow: var(--shadow); transition: border-color .15s;
+}
+.live-card:hover { border-color: var(--plum); box-shadow: var(--shadow-md); }
+.live-card-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; margin-bottom: 8px; flex-wrap: wrap; }
+.live-card-title { font-size: 0.9rem; font-weight: 600; color: var(--text); }
+.live-card-date { font-family: var(--font-mono); font-size: 0.68rem; color: var(--text-dim); white-space: nowrap; }
+.live-card-imp { font-family: var(--font-mono); font-size: 0.88rem; font-weight: 700; color: var(--plum-deep); white-space: nowrap; }
+.live-card-meta { display: flex; gap: 5px; flex-wrap: wrap; margin-bottom: 8px; }
+.live-card-body { font-size: 0.82rem; color: var(--text-mid); line-height: 1.65; }
+.live-card-arg { margin-top: 8px; font-size: 0.72rem; color: var(--green); font-family: var(--font-mono); background: rgba(26,122,74,0.05); border-left: 2px solid var(--green); padding: 6px 10px; border-radius: 0 var(--r4) var(--r4) 0; line-height: 1.6; }
+.live-card-src { margin-top: 8px; font-size: 0.68rem; color: var(--plum); font-family: var(--font-mono); }
+.live-ts { font-family: var(--font-mono); font-size: 0.68rem; color: var(--text-dim); margin-bottom: 14px; display: flex; align-items: center; gap: 6px; }
+.live-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--green-light); display: inline-block; animation: pulse 1.5s ease-in-out infinite; }
+@keyframes pulse { 0%,100%{opacity:1;} 50%{opacity:0.3;} }
+.live-loading { text-align: center; padding: 3rem 2rem; color: var(--text-muted); }
+.live-loading .spinner { width: 24px; height: 24px; border-width: 3px; margin: 0 auto 1rem; display: block; }
+.live-loading p { font-size: 0.85rem; line-height: 1.7; }
+.live-loading .step { font-family: var(--font-mono); font-size: 0.72rem; color: var(--plum); margin-top: 8px; }
+
+/* ── SPINNER ── */
+.spinner {
+  display: inline-block; width: 13px; height: 13px;
+  border: 2px solid rgba(129,78,131,0.2); border-top-color: var(--plum);
+  border-radius: 50%; animation: spin 0.7s linear infinite; vertical-align: middle; margin-right: 5px;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ── DISCLAIMER ── */
+.disclaimer {
+  margin-top: 2rem; padding: 14px 18px;
+  background: var(--surface); border: 1px solid var(--border); border-radius: var(--r8);
+  font-size: 0.75rem; color: var(--text-muted); line-height: 1.65; box-shadow: var(--shadow);
+}
+.disclaimer strong { color: var(--orange); }
+.disclaimer a { color: var(--plum); text-decoration: none; }
+.disclaimer a:hover { text-decoration: underline; }
+
+/* ── SCROLLBAR ── */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border-med); border-radius: 3px; }
+
+@media(max-width: 700px) {
+  .frow { flex-direction: column; }
+  .frow select, .frow .sort-grp { min-width: 100%; }
+  .stats { grid-template-columns: 1fr 1fr; }
+  .tgrid { grid-template-columns: 1fr; }
+  .csum { flex-direction: column; }
+  .cright { text-align: left; }
+  .srow { flex-direction: column; }
+  .sem-row { flex-direction: column; }
+  .wrap { padding: 24px 16px 60px; }
+  .topbar { padding: 0 16px; }
+}
+</style>
+</head>
+<body>
+<nav class="topbar">
+  <div class="brand">
+    <div class="brand-mark">RG</div>
+    <span class="brand-name">Rastreador RGPD</span>
+    <div class="brand-sep"></div>
+    <span class="brand-norm">v3.1 · Sanciones europeas · 2019–2026</span>
+  </div>
+  <span class="vpill">45+ resoluciones · Búsqueda en tiempo real</span>
+</nav>
+
+<div class="wrap">
+
+<header>
+  <div>
+    <div class="page-eyebrow">Herramienta de consultoría en protección de datos</div>
+    <h1>Rastreador de <span>Sanciones</span> RGPD</h1>
+    <p class="subtitle">AEPD · EDPB · CNIL · ICO · Garante y otras autoridades europeas · Base de datos histórica + búsqueda de novedades en tiempo real</p>
+  </div>
+</header>
+
+<div class="panel">
+  <div class="mode-row">
+    <button class="mbtn active" id="m-normal" onclick="setMode('normal')">Busqueda normal</button>
+    <button class="mbtn" id="m-semantic" onclick="setMode('semantic')">&#10022; Análisis IA (Claude)</button>
+  </div>
+  <span class="plabel" id="plabel">Búsqueda por palabras clave</span>
+  <div class="srow">
+    <input type="text" id="query" placeholder="ej: videovigilancia, consentimiento, brecha, hospital, ia..." />
+    <button class="sbtn" onclick="buscar()">Buscar</button>
+    <button class="abtn" onclick="abrirAEPD()">AEPD.es</button>
+  </div>
+  <div class="frow">
+    <select id="f-aut" onchange="buscar()">
+      <option value="">Autoridad (todas)</option>
+      <option value="AEPD">AEPD (Espana)</option>
+      <option value="EDPB">EDPB (UE)</option>
+      <option value="CNIL">CNIL (Francia)</option>
+      <option value="ICO">ICO (Reino Unido)</option>
+      <option value="BfDI">BfDI (Alemania)</option>
+      <option value="DPC">DPC (Irlanda)</option>
+      <option value="Garante">Garante (Italia)</option>
+      <option value="AP">AP (Países Bajos)</option>
+      <option value="DT">DT (Suecia)</option>
+    </select>
+    <select id="f-sec" onchange="buscar()">
+      <option value="">Sector (todos)</option>
+      <option value="Telecomúnicaciónes">Telecomúnicaciónes</option>
+      <option value="Sanidad">Sanidad</option>
+      <option value="Banca">Banca y finanzas</option>
+      <option value="Administración">Administración pública</option>
+      <option value="Tecnologia">Tecnologia</option>
+      <option value="Comercio">Comercio y retail</option>
+      <option value="RRHH">RRHH y empleo</option>
+      <option value="Seguros">Seguros</option>
+      <option value="Medios">Medios y comunicación</option>
+      <option value="Energía">Energía</option>
+      <option value="Transporte">Transporte</option>
+      <option value="IA">Inteligencia Artificial</option>
+    </select>
+    <select id="f-tip" onchange="buscar()">
+      <option value="">Tipo infracción (todas)</option>
+      <option value="base legal">Base legal</option>
+      <option value="consentimiento">Consentimiento</option>
+      <option value="videovigilancia">Videovigilancia</option>
+      <option value="brecha">Brecha de seguridad</option>
+      <option value="derechos">Derechos ARCO</option>
+      <option value="información">Deber de información</option>
+      <option value="spam">Spam / comúnicaciónes</option>
+      <option value="ia">IA y automatización</option>
+      <option value="transferencia">Transferencia internacional</option>
+    </select>
+    <select id="f-imp" onchange="buscar()">
+      <option value="">Importe (todos)</option>
+      <option value="0">Apercibimiento</option>
+      <option value="1-9999">Hasta 10.000 EUR</option>
+      <option value="10000-99999">10K - 100K EUR</option>
+      <option value="100000-999999">100K - 1M EUR</option>
+      <option value="1000000-9999999">1M - 10M EUR</option>
+      <option value="10000000">Mas de 10M EUR</option>
+    </select>
+    <select id="f-anyo" onchange="buscar()">
+      <option value="">Año (todos)</option>
+      <option value="2025">2025</option>
+      <option value="2024">2024</option>
+      <option value="2023">2023</option>
+      <option value="2022">2022</option>
+      <option value="2021">2021</option>
+      <option value="2020">2020</option>
+      <option value="2019">2019</option>
+    </select>
+    <div class="sort-grp">
+      <span class="slabel">Ordenar:</span>
+      <button class="sortbtn active" id="sort-fecha" onclick="setSort('fecha')">Fecha</button>
+      <button class="sortbtn" id="sort-imp" onclick="setSort('importe')">Importe</button>
+    </div>
+  </div>
+</div>
+
+<div class="sem-panel" id="sem-panel">
+  <div class="sem-label">&#10022; Describe tu situación <span class="ai-badge" id="sem-ai-badge">IA &middot; OpenRouter</span></div>
+  <div class="provider-row">
+    <span class="prov-label">Proveedor:</span>
+    <select id="ai-provider" onchange="onProviderChange()">
+      <option value="openrouter">OpenRouter (recomendado — acceso a todos los modelos)</option>
+      <option value="openai">OpenAI (ChatGPT)</option>
+      <option value="anthropic">Anthropic (Claude directo)</option>
+      <option value="groq">Groq (gratuito, sin búsqueda web)</option>
+    </select>
+  </div>
+  <div class="sem-row">
+    <textarea id="sem-q" placeholder="ej: Somos una clínica con un software de gestión de pacientes externo. ¿Qué resoluciones son relevantes?"></textarea>
+    <button class="sem-btn" id="sem-btn" onclick="buscarSem()">Analizar</button>
+  </div>
+  <div class="sem-key" id="sem-key-row">
+    <input type="password" id="sem-key" placeholder="API Key de OpenRouter (sk-or-...)" />
+  </div>
+  <div class="sem-hint" id="sem-hint-text">La key se guarda mientras la página esté abierta. <span id="sem-hint-link"><a href="https://openrouter.ai/keys" target="_blank" style="color:var(--info);">Obtener key gratuita en openrouter.ai</a></span></div>
+  <div class="chips">
+    <span class="chip" onclick="setEx('Tenemos cámaras de seguridad en la tienda y en la entrada. No se si cumplimos la normativa.')">Cámaras en tienda</span>
+    <span class="chip" onclick="setEx('Guardamos los CVs de candidatos rechazados para futuras ofertas. Cuanto tiempo podemos conservarlos?')">CVs de candidatos</span>
+    <span class="chip" onclick="setEx('Enviamos newsletters y algunos clientes piden darse de baja pero seguimos enviando emails.')">Bajas de email</span>
+    <span class="chip" onclick="setEx('Tenemos una app movil que usa la ubicacion del usuario para mostrar ofertas cercanas.')">App con geolocalizacion</span>
+    <span class="chip" onclick="setEx('Somos un hospital y compartimos datos de pacientes con un software de gestión externo.')">Software sanitario</span>
+    <span class="chip" onclick="setEx('Hacemos perfilado de clientes para campañas de marketing personalizado.')">Perfilado marketing</span>
+    <span class="chip" onclick="setEx('Usamos una herramienta de IA que procesa datos de clientes para hacer predicciones de compra.')">IA con datos clientes</span>
+    <span class="chip" onclick="setEx('Usamos cookies de terceros en nuestra web sin banner o con un banner que solo permite aceptar.')">Cookies sin rechazo</span>
+  </div>
+</div>
+
+<div class="stats">
+  <div class="stat"><div class="slbl">Total BD</div><div class="sval" id="st-tot">45+</div></div>
+  <div class="stat s2"><div class="slbl">Sanción media</div><div class="sval" id="st-med">-</div></div>
+  <div class="stat s3"><div class="slbl">Sanción maxima</div><div class="sval" id="st-max">-</div></div>
+  <div class="stat s4"><div class="slbl">Art. más infringido</div><div class="sval" id="st-art">-</div></div>
+</div>
+
+<div class="tabs">
+  <button class="tab active" onclick="switchTab('res',this)">Resultados <span id="cnt"></span></button>
+  <button class="tab" onclick="switchTab('tend',this)">Tendencias</button>
+  <button class="tab" onclick="switchTab('live',this)">&#9679; Novedades en vivo</button>
+</div>
+
+<div id="tab-res">
+  <div id="output">
+    <div class="empty"><div class="ico">&#11041;</div><p>Busca por termino o filtra para consultar resoluciones.<br>Haz clic en cualquier caso para ver el análisis completo.</p></div>
+  </div>
+</div>
+<div id="tab-tend" style="display:none;">
+  <div id="output-tend">
+    <div class="empty"><p>Realiza una busqueda para ver tendencias.</p></div>
+  </div>
+</div>
+<div id="tab-live" style="display:none;">
+  <div class="live-panel">
+    <div class="live-header">
+      <div>
+        <div class="live-title">&#9679; Últimas resoluciones RGPD publicadas</div>
+        <div class="live-sub">Busqueda en tiempo real con IA + internet &middot; AEPD, EDPB, CNIL, ICO, Garante y otros &middot; Resultados del momento actual</div>
+      </div>
+      <button class="live-btn" id="live-btn" onclick="buscarLive()">Buscar ahora</button>
+    </div>
+    <div class="live-filters">
+      <button class="lfbtn active" id="lf-all" onclick="setLiveFiltro('todo')">Todas las autoridades</button>
+      <button class="lfbtn" id="lf-aepd" onclick="setLiveFiltro('AEPD')">Solo AEPD</button>
+      <button class="lfbtn" id="lf-eu" onclick="setLiveFiltro('UE')">Europa (EDPB/otras)</button>
+      <button class="lfbtn" id="lf-ia" onclick="setLiveFiltro('IA')">IA y tecnologia</button>
+    </div>
+    <div class="sem-hint" style="margin-bottom:12px;">Usa la misma API key y proveedor configurados en la búsqueda semántica. <span id="live-prov-note" style="color:var(--warn);font-size:10px;font-family:var(--font-mono);"></span></div>
+    <div id="output-live">
+      <div class="empty"><div class="ico">&#9673;</div><p>Pulsa <strong style="color:var(--text);">Buscar ahora</strong> para obtener las últimas resoluciones RGPD.<br>La IA buscara en internet en fuentes oficiales y especializadas.</p></div>
+    </div>
+  </div>
+</div>
+
+<div class="disclaimer">
+  <strong>Aviso importante:</strong> Base de datos <strong>orientativa</strong>. Los casos estan basados en resoluciones reales pero los detalles deben verificarse siempre en las fuentes oficiales antes de usarlos con clientes:
+  <a href="https://www.aepd.es/informes-y-resoluciones/resoluciones" target="_blank">AEPD</a> &middot;
+  <a href="https://www.edpb.europa.eu/our-work-tools/consistency-findings/enforcement_es" target="_blank">EDPB</a> &middot;
+  <a href="https://www.boe.es/buscar/boe.php" target="_blank">BOE</a> &middot;
+  <a href="https://www.enforcementtracker.com/" target="_blank">GDPR Enforcement Tracker</a>
+</div>
+
+</div>
+
+<script>
+var ARTS = {
+  "Art. 5": "Principios del tratamiento",
+  "Art. 5.1.a": "Licitud, lealtad y transparencia",
+  "Art. 5.1.b": "Limitacion de la finalidad",
+  "Art. 5.1.c": "Minimizacion de datos",
+  "Art. 5.1.e": "Limitacion del plazo de conservación",
+  "Art. 5.1.f": "Integridad y confidencialidad",
+  "Art. 6": "Licitud del tratamiento",
+  "Art. 7": "Condiciónes del consentimiento",
+  "Art. 8": "Consentimiento de menores",
+  "Art. 9": "Categorías especiales de datos",
+  "Art. 12": "Transparencia de la información",
+  "Art. 13": "Información al recopilar datos",
+  "Art. 14": "Información sin recogida directa",
+  "Art. 17": "Derecho de supresion (olvido)",
+  "Art. 20": "Portabilidad de datos",
+  "Art. 21": "Derecho de oposición",
+  "Art. 22": "Decisiones automatizadas y perfilado",
+  "Art. 25": "Privacidad desde el diseño",
+  "Art. 28": "Encargado del tratamiento",
+  "Art. 32": "Seguridad del tratamiento",
+  "Art. 33": "Notificación de brechas",
+  "Art. 34": "Comúnicación al interésado",
+  "Art. 35": "Evaluación de impacto (EIPD)",
+  "Art. 44": "Transferencias internacionales",
+  "Art. 46": "Garantías transferencias internacionales",
+  "Art. 83": "Condiciónes para la imposicion de multas",
+  "Art. 88": "Tratamiento en el ámbito laboral"
+};
+
+function artChip(a) {
+  var name = ARTS[a] || "";
+  var nameHtml = name ? ('<span class="artname"> &middot; ' + name + "</span>") : "";
+  return '<span class="artchip"><span class="artnum">' + a + "</span>" + nameHtml + "</span>";
+}
+
+var DB = [
+  // === AEPD - TELECOMUNICACIONES ===
+  {id:"a001",url:"https://www.aepd.es/documento/ps-00120-2019.pdf",aut:"AEPD",emp:"Vodafone Espana",sec:"Telecomúnicaciónes",fecha:"2020-03",imp:8150000,arts:["Art. 6","Art. 5.1.f"],tip:"base legal",grav:"Muy grave",
+   que:"Vodafone trato datos personales de millones de clientes sin disponer de una base legal legitima. Sus sistemas presentaban deficiencias de seguridad graves que permitieron accesos no autorizados. La empresa cedia datos a terceros sin contrato de encargado del tratamiento y sin informar a los afectados.",
+   nodebio:"No debería haber cedido datos a terceros sin base legal ni contrato. No debería haber mantenido sistemas con controles de acceso insuficientes. No debería haber iniciado campañas comerciales con datos de clientes sin consentimiento válido.",
+   arg:"La mayor sanción a una teleco en Espana. Demuestra que incluso empresas con grandes departamentos jurídicos incumplen el RGPD. Util para justificar auditorias periódicas."},
+
+  {id:"a002",url:"https://www.aepd.es/documento/ps-00057-2020.pdf",aut:"AEPD",emp:"Orange Espana",sec:"Telecomúnicaciónes",fecha:"2021-06",imp:6000000,arts:["Art. 6","Art. 13"],tip:"base legal",grav:"Muy grave",
+   que:"Orange cedió datos de clientes a empresas del grupo y a terceros sin base legal válida. Sus avisos de privacidad no informaban con claridad sobre las finalidades ni las cesiónes. El consentimiento recabado era generico e inválido.",
+   nodebio:"No debería haber compartido datos con terceros sin base legal propia para esa cesión. No debería haber utilizado cláusulas de privacidad ambiguas que ocultaban el alcance real del tratamiento.",
+   arg:"Caso paradigmatico de cesión de datos sin base legal. Util para clientes del sector teleco o cualquier empresa que comparta datos con socios comerciales."},
+
+  {id:"a003",url:"https://www.aepd.es/documento/ps-00053-2021.pdf",aut:"AEPD",emp:"Xfera Moviles (Yoigo)",sec:"Telecomúnicaciónes",fecha:"2022-04",imp:1200000,arts:["Art. 6","Art. 5.1.e"],tip:"base legal",grav:"Muy grave",
+   que:"Yoigo mantuvo datos de ex-clientes en sus sistemas durante años después de que la relación contractual finalizara, y los utilizó para campañas comerciales sin base legal. La empresa no tenía definido ningun plazo de conservación para datos de clientes dados de baja.",
+   nodebio:"No debería haber conservado datos de ex-clientes más allá del plazo necesario. No debería haber usado esos datos para marketing sin consentimiento expreso y actualizado.",
+   arg:"Perfecto para ilustrar el principio de limitacion del plazo de conservación. Pregunta clave: cuanto tiempo guardas los datos y tienes documentado por que?"},
+
+  {id:"a004",url:"https://www.aepd.es/documento/ps-00028-2020.pdf",aut:"AEPD",emp:"Movistar / Telefónica",sec:"Telecomúnicaciónes",fecha:"2020-09",imp:900000,arts:["Art. 17","Art. 21"],tip:"derechos",grav:"Grave",
+   que:"Multiples clientes solicitaron la supresion de datos y la oposición al marketing, pero Telefónica no atendio esas solicitudes en el plazo legal de un mes. En varios casos los datos siguieron en ficheros de morosos sin deuda real.",
+   nodebio:"No debería haber ignorado ni retrasado las solicitudes de derechos. No debería haber mantenido datos en ficheros de solvencia sin deuda cierta, vencida y exigible.",
+   arg:"Referencia clave para el derecho de supresion. Un procesó deficiente de atención de derechos puede costar casi un millon de euros."},
+
+  // === AEPD - BANCA ===
+  {id:"a005",url:"https://www.aepd.es/documento/ps-00490-2019.pdf",aut:"AEPD",emp:"BBVA",sec:"Banca",fecha:"2021-12",imp:5000000,arts:["Art. 6","Art. 13","Art. 14"],tip:"consentimiento",grav:"Muy grave",
+   que:"BBVA realizaba perfilado detallado de clientes para campañas publicitarias sin haber obtenido consentimiento válido e informado. Las cláusulas de privacidad no detallaban el usó de datos para crear perfiles de comportamiento financiero.",
+   nodebio:"No debería haber realizado perfilado con fines comerciales sin consentimiento explícito. No debería haber ocultado en cláusulas genericas el usó real de los datos.",
+   arg:"Referencia esencial para el sector financiero. El perfilado de clientes es una actividad de alto riesgo que requiere consentimiento explícito y una EIPD previa."},
+
+  {id:"a006",url:"https://www.aepd.es/documento/ps-00120-2021.pdf",aut:"AEPD",emp:"CaixaBank",sec:"Banca",fecha:"2022-07",imp:6000000,arts:["Art. 6","Art. 5.1.a"],tip:"consentimiento",grav:"Muy grave",
+   que:"CaixaBank compartió datos de clientes con otras empresas del grupo sin base legal suficiente, aplicando el interés legitimo de forma incorrecta. La AEPD determinó que el interés legitimo no puede aplicarse al marketing directo sin un análisis de ponderación documentado.",
+   nodebio:"No debería haber aplicado el interés legitimo como base legal para el marketing sin documentar el test de ponderación. Ser del mismo grupo empresarial no equivale a ser el mismo responsable del tratamiento.",
+   arg:"Clave para argumentar que el interés legitimo no es un comodín. Cualquier cliente que lo use como base legal debe documentar el test de ponderación."},
+
+  {id:"a007",url:"https://www.aepd.es/documento/ps-00486-2018.pdf",aut:"AEPD",emp:"Equifax",sec:"Banca",fecha:"2019-11",imp:1000000,arts:["Art. 6","Art. 17"],tip:"base legal",grav:"Muy grave",
+   que:"Equifax incluyo a ciudadanos en su fichero de solvencia sin que existiera una deuda cierta, vencida y exigible. En varios casos la deuda estaba en disputa o ya había sido pagada. Los afectados encontraron obstáculos al ejercer el derecho de supresion.",
+   nodebio:"No debería haber incluido personas en ficheros de morosos sin verificar que la deuda cumple los tres requisitos: cierta, vencida y exigible. No debería haber obstaculizado el ejercicio del derecho de supresion.",
+   arg:"Fundamental para clientes que gestiónan o consultan ficheros de morosos. Los requisitos de la deuda son inviolables."},
+
+  // === AEPD - SANIDAD ===
+  {id:"a008",url:"https://www.aepd.es/documento/ps-00131-2018.pdf",aut:"AEPD",emp:"Hospital Universitario La Paz",sec:"Sanidad",fecha:"2019-07",imp:30000,arts:["Art. 5.1.f","Art. 32"],tip:"brecha",grav:"Grave",
+   que:"Un empleado del hospital accedio sin autorización a los historiales clinicos de varios pacientes, incluyendo datos de diagnóstico y medicación. El hospital no tenía controles de acceso basados en roles que impidieran a personal sin relación consultar esos historiales.",
+   nodebio:"No debería haber permitido accesos a historiales sin control de roles y perfiles de usuario. No debería haber tardado más de 72 horas en notificar la brecha a la AEPD.",
+   arg:"El importe es bajo pero la leccion es clara: los datos de salud requieren controles de acceso estrictos basados en la necesidad de conocer."},
+
+  {id:"a009",url:"https://www.aepd.es/documento/ps-00024-2020.pdf",aut:"AEPD",emp:"Clinica dental (Cataluna)",sec:"Sanidad",fecha:"2021-03",imp:15000,arts:["Art. 13","Art. 9"],tip:"información",grav:"Grave",
+   que:"Una clinica dental recogia datos de salud de pacientes sin incluir la información obligatoria del Art. 13: responsable, finalidad, plazo de conservación y derechos. Además tenía contratado un software de gestión clinica sin el preceptivo contrato de encargado del tratamiento.",
+   nodebio:"No debería haber recogido datos de salud sin informar a los pacientes de todos los elementos del Art. 13. No debería haber dado acceso a sus datos a un proveedor de software sin contrato de encargado.",
+   arg:"Ideal para pymes sanitarias. Dos incumplimientos muy comúnes y fáciles de corregir: cláusula informativa y contrato con el proveedor de software."},
+
+  {id:"a010",url:"https://www.aepd.es/documento/ps-00074-2021.pdf",aut:"AEPD",emp:"Farmacia (Madrid)",sec:"Sanidad",fecha:"2022-01",imp:6000,arts:["Art. 13","Art. 5"],tip:"información",grav:"Leve",
+   que:"Una farmacia implemento una tarjeta de fidelizacion que requeria cumplimentar un formulario con datos personales. El formulario no incluia ninguna información sobre el tratamiento: sin responsable identificado, sin finalidad declarada, sin información sobre derechos.",
+   nodebio:"No debería haber puesto en marcha un programa de fidelizacion sin adaptar los formularios de recogida de datos con la información obligatoria del RGPD.",
+   arg:"El caso más basico posible: cualquier formulario que recoge datos personales debe incluir la cláusula informativa. Sin excepcion."},
+
+  // === AEPD - VIDEOVIGILANCIA ===
+  {id:"a011",url:"https://www.aepd.es/documento/ps-00016-2021.pdf",aut:"AEPD",emp:"Cadena de supermercados",sec:"Comercio",fecha:"2021-05",imp:60000,arts:["Art. 5.1.c","Art. 13"],tip:"videovigilancia",grav:"Grave",
+   que:"Una cadena de supermercados instaló cámaras cuyo angulo de grabacion capturaba sistemáticamente la acera y la via pública frente a sus establecimientos. Los carteles informativos no indicaban el responsable ni como ejercer los derechos.",
+   nodebio:"No debería haber instalado cámaras que graben la via pública, solo el espacio interior del establecimiento. Los carteles deben indicar responsable, finalidad y como ejercer derechos.",
+   arg:"Referencia estándar para cualquier cliente con videovigilancia. Dos errores muy comúnes: angulo que captura calle y cartel incompleto."},
+
+  {id:"a012",url:"https://www.aepd.es/documento/ps-00370-2021.pdf",aut:"AEPD",emp:"Comúnidad de vecinos",sec:"Administración",fecha:"2022-06",imp:1500,arts:["Art. 5.1.c","Art. 13"],tip:"videovigilancia",grav:"Leve",
+   que:"Un vecino instaló una cámara de seguridad en el exterior de su vivienda que captaba de forma continuada el acceso a la vivienda del vecino colindante y parte de su jardin privado. No había cartel informativo.",
+   nodebio:"No debería haber orientado la cámara hacia la propiedad ajena. La videovigilancia domestica solo puede cubrir el espacio propio.",
+   arg:"Util para administradores de fincas. La videovigilancia domestica también esta regulada y puede dar lugar a sanciones."},
+
+  {id:"a013",url:"https://www.aepd.es/documento/ps-00601-2019.pdf",aut:"AEPD",emp:"Empresa de seguridad privada",sec:"Comercio",fecha:"2020-11",imp:75000,arts:["Art. 5.1.f","Art. 32","Art. 13"],tip:"videovigilancia",grav:"Grave",
+   que:"La empresa instaló cámaras con reconocimiento facial en un centro comercial sin haber realizado una EIPD, sin base legal explícita para tratar datos biometricos y sin informar a las personas. Los datos biometricos se procesaban y almacenaban sin cifrado.",
+   nodebio:"No debería haber implantado reconocimiento facial sin EIPD previa y sin base legal para datos biometricos. No debería haber almacenado datos biometricos sin cifrado.",
+   arg:"El reconocimiento facial es dato biometrico de categoría especial. Sin EIPD, sin base legal del Art. 9 y sin medidas de seguridad reforzadas, la sanción es inevitable."},
+
+  // === AEPD - RRHH ===
+  {id:"a014",url:"https://www.aepd.es/documento/ps-00065-2020.pdf",aut:"AEPD",emp:"Empresa logistica",sec:"RRHH",fecha:"2021-09",imp:50000,arts:["Art. 9","Art. 6"],tip:"base legal",grav:"Grave",
+   que:"La empresa accedia a los partes medicos de sus trabajadores para conocer los diagnósticos de sus bajas y comúnicaba esa información al departamento de operaciónes y a clientes. Los datos de salud se trataban como datos ordinarios, sin las garantías adicionales exigidas para datos de categoría especial.",
+   nodebio:"No debería haber tratado datos de salud de empleados más allá de lo estrictamente necesario para gestiónar la baja. No debería haberlos comúnicado a terceros bajo ningun concepto sin base legal específica.",
+   arg:"Los datos de salud de empleados son categoría especial incluso en el ámbito laboral. El empresario solo puede conocer la duracion previsible de la baja, nunca el diagnóstico."},
+
+  {id:"a015",url:"https://www.aepd.es/documento/ps-00141-2021.pdf",aut:"AEPD",emp:"Empresa de construccion",sec:"RRHH",fecha:"2022-03",imp:20000,arts:["Art. 5.1.e","Art. 13"],tip:"información",grav:"Grave",
+   que:"La empresa conservaba currículos y datos de candidatos rechazados durante más de cinco años, sin informarles del plazo de conservación previsto, del responsable del tratamiento, ni de como podían ejercer sus derechos.",
+   nodebio:"No debería haber conservado CVs de candidatos rechazados más allá de un plazo razonable (1-2 años máximo). No debería haber omitido la información obligatoria en el procesó de selección.",
+   arg:"Límite de conservación de CVs: máximo 1-2 años sin consentimiento. Pasado ese plazo, hay que destruirlos o pedir consentimiento expreso."},
+
+  {id:"a016",url:"https://www.aepd.es/documento/ps-00066-2021.pdf",aut:"AEPD",emp:"Call center",sec:"RRHH",fecha:"2021-11",imp:40000,arts:["Art. 88","Art. 6"],tip:"base legal",grav:"Grave",
+   que:"El call center grababa y monitorizaba todas las comúnicaciónes de sus empleados sin haberles informado previamente de esta práctica ni de su finalidad. Uso esas grabaciones como prueba en expedientes disciplinarios sin que los empleados hubieran sido advertidos.",
+   nodebio:"No debería haber monitorizado empleados sin informarles previamente de forma clara y específica. Una prueba obtenida sin informar al trabajador no es válida en ningun procedimiento.",
+   arg:"La monitorizacion de empleados requiere información previa explícita. Lo que no se informa no puede usarse como prueba en un expediente disciplinario."},
+
+  // === AEPD - MARKETING Y SPAM ===
+  {id:"a017",url:"https://www.aepd.es/documento/ps-00226-2019.pdf",aut:"AEPD",emp:"Seguros El Corte Ingles",sec:"Seguros",fecha:"2020-06",imp:1500000,arts:["Art. 6","Art. 21"],tip:"spam",grav:"Muy grave",
+   que:"La aseguradora siguio enviando comúnicaciónes comerciales a personas que habían ejercido formalmente su derecho de oposición al marketing. Cuando la AEPD solicito evidencias del consentimiento, la empresa no pudo acreditarlo para miles de destinatarios.",
+   nodebio:"No debería haber continuado enviando comúnicaciónes a quienes ejercieron la oposición. La carga de la prueba del consentimiento recae sobre el responsable del tratamiento.",
+   arg:"El derecho de oposición debe atenderse de inmediato y de forma permanente. Las listas de exclusión deben aplicarse antes de cualquier envio comercial."},
+
+  {id:"a018",url:"https://www.aepd.es/documento/ps-00077-2018.pdf",aut:"AEPD",emp:"Endesa",sec:"Energía",fecha:"2019-05",imp:3000000,arts:["Art. 6","Art. 5"],tip:"spam",grav:"Muy grave",
+   que:"Endesa cedió datos de sus clientes a otras empresas del grupo para campañas de marketing cruzado. La empresa argumento que al ser del mismo grupo podían compartir datos libremente, pero la AEPD dejó claro que cada entidad jurídica es un responsable independiente.",
+   nodebio:"No debería haber cedido datos entre empresas del grupo sin base legal específica para esa cesión. Ser del mismo grupo empresarial no equivale a ser el mismo responsable del tratamiento.",
+   arg:"Las empresas del mismo grupo no son la misma entidad a efectos de RGPD. La cesión entre filiales requiere base legal propia."},
+
+  // === AEPD - ADMINISTRACION ===
+  {id:"a019",url:"https://www.aepd.es/documento/ps-00307-2020.pdf",aut:"AEPD",emp:"Ayuntamiento de Molina de Segura",sec:"Administración",fecha:"2021-04",imp:0,arts:["Art. 5.1.f","Art. 32"],tip:"brecha",grav:"Grave",
+   que:"El ayuntamiento público en su sede electrónica documentos administrativos que contenian datos personales de ciudadanos (nombres, DNI, situaciónes economicas) sin haberlos anonimizado. Los documentos estuvieron accesibles públicamente durante varios dias.",
+   nodebio:"No debería haber públicado documentacion administrativa sin revisar que no contenia datos personales de terceros. Debe existir un procesó de revisión antes de públicar documentos en sede electrónica.",
+   arg:"Las administraciones públicas no pueden ser sancionadas económicamente pero si apercibidas. El daño reputacional y la obligación de notificar a los afectados son igualmente graves."},
+
+  {id:"a020",url:"https://www.aepd.es/documento/ps-00118-2021.pdf",aut:"AEPD",emp:"Conselleria de Educacion Valencia",sec:"Administración",fecha:"2022-05",imp:0,arts:["Art. 9","Art. 6"],tip:"base legal",grav:"Grave",
+   que:"La Conselleria trataba datos de salud de alumnos con discapacidad (diagnósticos, informes psicopedagogicos, necesidades de apoyo) sin base legal específica para datos de categoría especial. Los datos se compartian entre centros sin protocolos de seguridad reforzados.",
+   nodebio:"No debería haber tratado datos de salud de menores sin base legal explícita del Art. 9. Los datos de salud de menores son categoría especial con doble protección.",
+   arg:"Los datos de alumnos con necesidades educativas especiales son categoría especial. Su tratamiento requiere base legal específica y medidas de seguridad reforzadas."},
+
+  // === AEPD - TECNOLOGIA ===
+  {id:"a021",url:"https://www.aepd.es/documento/ps-00073-2021.pdf",aut:"AEPD",emp:"Google LLC",sec:"Tecnologia",fecha:"2022-01",imp:10000000,arts:["Art. 17"],tip:"derechos",grav:"Muy grave",
+   que:"Varios ciudadanos solicitaron a Google que eliminara de sus resultados de busqueda enlaces a noticias antiguas obsoletas y perjudiciales. Google denegó o ignoró las solicitudes argumentando interés público, pero la AEPD determinó que ese interés no prevalecia en esos casos concretos.",
+   nodebio:"No debería haber denegado solicitudes de derecho al olvido sin realizar el análisis de ponderación caso por caso. El interés público en la información no es absoluto.",
+   arg:"El derecho al olvido frente a buscadores esta consolidado. Google debe eliminar enlaces cuando el interésado lo solicita y la información ya no es relevante."},
+
+  {id:"a022",url:"https://www.enforcementtracker.com/gdpr-enforcement-tracker-data.xlsx",aut:"AEPD",emp:"Grindr",sec:"Tecnologia",fecha:"2021-07",imp:6500000,arts:["Art. 9","Art. 6"],tip:"base legal",grav:"Muy grave",
+   que:"Grindr compartia con terceros anunciantes datos de sus usuarios que revelaban implícitamente su orientacion sexual. El consentimiento obtenido era generico y no cumplia los requisitos de ser explícito e inequívoco que exige el RGPD para datos de categoría especial.",
+   nodebio:"No debería haber compartido datos que revelan orientacion sexual sin consentimiento explícito para ese tratamiento concreto. Un consentimiento generico no es válido para datos de categoría especial.",
+   arg:"Los datos que revelan orientacion sexual son categoría especial aunque no se declaren explícitamente. El consentimiento para su tratamiento debe ser explícito, específico e inequívoco."},
+
+  {id:"a023",url:"https://www.aepd.es/documento/ps-00035-2020.pdf",aut:"AEPD",emp:"Prisa Media",sec:"Medios",fecha:"2021-02",imp:200000,arts:["Art. 6","Art. 13"],tip:"consentimiento",grav:"Grave",
+   que:"Prisa instalaba cookies de seguimiento antes de que el usuario pudiera aceptarlas o rechazarlas. El banner de cookies hacia muy sencillo aceptar todo pero dificultaba enormemente rechazar las cookies no esenciales.",
+   nodebio:"No debería haber activado cookies de seguimiento antes de obtener el consentimiento. El diseño del banner no puede poner trabas al rechazo: aceptar y rechazar deben ser igual de fáciles.",
+   arg:"El diseño del banner de cookies es tan importante como su existencia. Si rechazar es más difícil que aceptar, el consentimiento no es válido."},
+
+  // === EDPB / GRANDES TECNOLOGICAS ===
+  {id:"b001",url:"https://www.dataprotection.ie/en/news-media/press-releases/data-protection-commission-announces-conclusion-of-inquiry-into-meta-platforms-ireland-limited",aut:"EDPB",emp:"Meta (Facebook / Instagram)",sec:"Tecnologia",fecha:"2022-11",imp:265000000,arts:["Art. 25","Art. 5"],tip:"base legal",grav:"Muy grave",
+   que:"Una vulnerabilidad en la herramienta de importacion de contactos de Facebook fue explotada para extraer datos de 533 millones de usuarios: nombres, teléfonos, correos y ubicaciones. La DPC determinó que Meta no había implementado las medidas de privacidad desde el diseño necesarias para prevenir esa extracción masiva.",
+   nodebio:"No debería haber diseñado herramientas de importacion de contactos sin límites de tasa ni controles anti-scraping. La privacidad desde el diseño obliga a incorporar estas protecciónes desde el inicio del desarrollo.",
+   arg:"Demuestra que una brecha por diseño deficiente de producto puede costar 265 millones. La privacidad desde el diseño no es opciónal, es una obligación del Art. 25."},
+
+  {id:"b002",url:"https://www.dataprotection.ie/en/news-media/press-releases/data-protection-commission-announces-conclusion-of-inquiry-into-whatsapp-ireland-limited",aut:"EDPB",emp:"Meta (WhatsApp)",sec:"Tecnologia",fecha:"2021-09",imp:225000000,arts:["Art. 13","Art. 14"],tip:"información",grav:"Muy grave",
+   que:"WhatsApp no informaba de forma transparente a sus usuarios sobre como trataba sus datos, con quien los compartia dentro del grupo Meta y cuales eran las bases legales para cada tratamiento. La política de privacidad era deliberadamente opaca.",
+   nodebio:"No debería haber diseñado una política de privacidad ininteligible para el ciudadano medio. La información sobre el tratamiento debe ser concisa, fácil de entender y accesible.",
+   arg:"La transparencia no es un formalismo, es una obligación real. Una política de privacidad que nadie entiende no cumple con el Art. 13. La sanción fue de 225 millones."},
+
+  {id:"b003",url:"https://www.cnpd.lu/en/news/press-releases/amazon-europe-core-sarl-receives-746-million-euro-fine/",aut:"EDPB",emp:"Amazon Europe",sec:"Comercio",fecha:"2021-07",imp:746000000,arts:["Art. 6","Art. 5"],tip:"consentimiento",grav:"Muy grave",
+   que:"Amazon rastreaba el comportamiento de sus usuarios dentro y fuera de su plataforma para construir perfiles de interéses y mostrar anuncios personalizados, sin haber obtenido un consentimiento válido, libre y específico para este tratamiento.",
+   nodebio:"No debería haber construido perfiles de comportamiento de usuarios para publicidad sin consentimiento válido. El interés legitimo no es base legal suficiente para el seguimiento comportamental.",
+   arg:"La mayor sanción de la historia del RGPD en el momento de su imposicion. El modelo de publicidad basado en perfilado sin consentimiento válido es indefendible ante las autoridades."},
+
+  {id:"b004",url:"https://www.cnil.fr/fr/cookies-google-ecope-dune-amende-de-150-millions-deuros",aut:"CNIL",emp:"Google (Francia)",sec:"Tecnologia",fecha:"2022-01",imp:150000000,arts:["Art. 7","Art. 12"],tip:"consentimiento",grav:"Muy grave",
+   que:"Google diseño su banner de cookies en Francia de forma que aceptar todas las cookies era un procesó de un clic, mientras que rechazarlas requeria varios pasos adicionales. La CNIL determinó que este diseño hacia que el consentimiento no fuera libre.",
+   nodebio:"No debería haber diseñado la interfaz de cookies con dark patterns que favorecen la aceptacion sobre el rechazo. El rechazo debe ser igual de accesible que la aceptacion.",
+   arg:"La CNIL actuo simultaneamente contra Google y Facebook. El diseño de interfaces de cookies es ahora un area de supervisión activa en toda Europa."},
+
+  {id:"b005",url:"https://www.cnil.fr/fr/cookies-facebook-ecope-dune-amende-de-60-millions-deuros",aut:"CNIL",emp:"Facebook (Francia)",sec:"Tecnologia",fecha:"2022-01",imp:60000000,arts:["Art. 7","Art. 12"],tip:"consentimiento",grav:"Muy grave",
+   que:"Facebook fue sanciónada de forma coordinada con Google por los mismos motivos: el mecanismo de consentimiento de cookies hacia el rechazo significativamente más complicado que la aceptacion.",
+   nodebio:"No debería haber utilizado diseño persuasivo (dark patterns) para dificultar el rechazo de cookies. El consentimiento presionado o manipulado no es un consentimiento válido.",
+   arg:"Las decisiones de la CNIL sobre cookies sientan precedente en toda la UE. Las autoridades españolas han adoptado el mismo criterio en sus guias sobre el usó de cookies."},
+
+  {id:"b006",url:"https://ico.org.uk/about-the-ico/media-centre/news-and-blogs/2020/10/ico-fines-british-airways-20m-for-data-breach-affecting-more-than-400-000-customers/",aut:"ICO",emp:"British Airways",sec:"Comercio",fecha:"2020-10",imp:20000000,arts:["Art. 5.1.f","Art. 32"],tip:"brecha",grav:"Muy grave",
+   que:"Un ataque informatico comprometio el sistema de reservas de British Airways y expuso datos de 400.000 clientes, incluyendo datos de tarjetas de credito. La ICO determinó que las medidas de seguridad eran inadecuadas: sin autenticacion multifactor, sistemas desactualizados y sin monitorizacion efectiva.",
+   nodebio:"No debería haber operado sistemas de pago sin autenticacion multifactor ni monitorizacion activa. La seguridad en sistemas que procesan datos de pago debe revisarse periódicamente.",
+   arg:"Una brecha en el sector travel que costo 20 millones. Los sistemas de reservas y pago son objetivo prioritario de ataques y requieren medidas de seguridad auditadas."},
+
+  {id:"b007",url:"https://ico.org.uk/about-the-ico/media-centre/news-and-blogs/2020/10/marriott-international-inc-penalty-notice/",aut:"ICO",emp:"Marriott International",sec:"Comercio",fecha:"2020-10",imp:18400000,arts:["Art. 5.1.f","Art. 32"],tip:"brecha",grav:"Muy grave",
+   que:"Marriott sufrió una brecha que afecto a 339 millones de registros de huespedes. La brecha se origino en los sistemas de Starwood, una cadena hotelera adquirida, y llevaba activa desde antes de la adquisición. Marriott no realizo una auditoria de ciberseguridad en el procesó de compra.",
+   nodebio:"No debería haber adquirido una empresa sin auditar previamente su postura de seguridad. Los riesgos de protección de datos se heredan en las fusiónes y adquisiciónes.",
+   arg:"Fundamental para procesos de M&A: la due diligence debe incluir una auditoria de protección de datos. Los riesgos de seguridad se heredan con la empresa adquirida."},
+
+  {id:"b008",url:"https://www.bfdi.bund.de/DE/Infothek/Pressemitteilungen/2019/29_BussgeldbescheidGegen1und1.html",aut:"BfDI",emp:"1&1 Telecom",sec:"Telecomúnicaciónes",fecha:"2019-12",imp:9550000,arts:["Art. 5.1.f","Art. 32"],tip:"brecha",grav:"Muy grave",
+   que:"El servicio de atención al cliente de 1&1 permitia acceder a la cuenta de cualquier cliente con solo proporcionar el nombre y la fecha de nacimiento. Esto permitia a cualquier persona hacerse pasar por un cliente y acceder a sus datos personales.",
+   nodebio:"No debería haber implementado un procesó de verificación de identidad tan debil para el acceso a datos personales. La autenticacion en atención al cliente debe combinar al menos dos factores de verificación.",
+   arg:"La autenticacion debil en atención al cliente es una brecha de seguridad técnica y organizativa. Los call centers son un vector de ataque habitual que requiere protocolos robustos."},
+
+  {id:"b009",url:"https://www.dataprotection.ie/en/news-media/press-releases/data-protection-commission-announces-conclusion-of-inquiry-into-twitter-international-unlimited-company",aut:"DPC",emp:"Twitter International",sec:"Tecnologia",fecha:"2022-11",imp:450000,arts:["Art. 33","Art. 34"],tip:"brecha",grav:"Grave",
+   que:"Twitter sufrió una brecha de seguridad pero tardó más de 72 horas en notificarla a la autoridad de control irlandesa. La documentacion interna de la brecha era incompleta: no recogida el alcance del incidente ni las medidas de contencion adoptadas.",
+   nodebio:"No debería haber superado el plazo de 72 horas para notificar la brecha. La documentacion interna de una brecha debe ser exhaustiva desde el primer momento.",
+   arg:"El plazo de 72 horas para notificar brechas es absoluto. Un retraso en la notificación, aunque la brecha sea menor, siempre se sancióna."},
+
+  {id:"b010",url:"https://www.dataprotection.ie/en/news-media/press-releases/data-protection-commission-announces-conclusion-of-inquiry-into-tiktok-technology-limited",aut:"EDPB",emp:"TikTok",sec:"Tecnologia",fecha:"2023-09",imp:345000000,arts:["Art. 5","Art. 6","Art. 9"],tip:"base legal",grav:"Muy grave",
+   que:"TikTok fue sanciónada por multiples incumplimientos en el tratamiento de datos de menores: las cuentas de menores eran públicas por defecto, el sistema de verificación de edad era insuficiente, y los menores eran objeto de perfilado y publicidad comportamental sin base legal.",
+   nodebio:"No debería haber configurado las cuentas de menores como públicas por defecto. No debería haber aplicado publicidad comportamental a menores sin base legal válida.",
+   arg:"Los datos de menores en plataformas digitales estan bajo escrutinio máximo. Las configuraciónes de privacidad por defecto para menores deben ser las más restrictivas posibles."},
+
+  // === NUEVOS 2023-2025 ===
+
+  {id:"c001",url:"https://www.dataprotection.ie/en/news-media/press-releases/data-protection-commission-announces-conclusion-of-inquiry-into-meta-platforms-ireland-limited-2",aut:"EDPB",emp:"Meta (Instagram / Facebook)",sec:"Tecnologia",fecha:"2023-01",imp:390000000,arts:["Art. 6","Art. 7"],tip:"base legal",grav:"Muy grave",
+   que:"La DPC irlandesa, coordinada con el EDPB, sancióno a Meta por haber cambiado unilateralmente la base legal del tratamiento publicitario: paso del consentimiento al contrato (interés legitimo) para eludir la obligación de pedir permiso. El EDPB ordeno a Meta que volviera a basar el tratamiento en consentimiento libre.",
+   nodebio:"No debería haber utilizado la ejecución de un contrato como base legal para la publicidad comportamental. Cambiar de base legal unilateralmente para eludir el consentimiento es una práctica fraudulenta.",
+   arg:"Marca el fin del modelo Meta de 'publicidad personalizada como parte del servicio'. Cualquier empresa que use contrato como base legal para marketing debe revisar si esa justificacion es real."},
+
+  {id:"c002",url:"https://www.dataprotection.ie/en/news-media/press-releases/data-protection-commission-announces-decision-following-inquiry-into-meta-platforms-ireland-limited",aut:"DPC",emp:"Meta (transferencias a EE.UU.)",sec:"Tecnologia",fecha:"2023-05",imp:1200000000,arts:["Art. 44","Art. 46"],tip:"transferencia",grav:"Muy grave",
+   que:"La DPC irlandesa sancióno a Meta con 1.200 millones de euros por transferir datos de usuarios europeos a servidores de EE.UU. sin garantías suficientes tras la anulacion del Privacy Shield. Meta usó cláusulas contractuales tipo pero sin verificar que en EE.UU. se garantizaba un nivel de protección equivalente al europeo.",
+   nodebio:"No debería haber transferido datos a EE.UU. apoyandose en cláusulas contractuales sin evaluar la legislacion de vigilancia estadounidense. Las transferencias internacionales requieren una evaluación del impacto de la transferencia (TIA) documentada.",
+   arg:"La mayor multa RGPD de la historia. Las transferencias a EE.UU. son válidas desde la adopción del EU-US Data Privacy Framework (julio 2023), pero las empresas no adheridas siguen necesitando una TIA. Clave para cualquier cliente que use servicios cloud americanos."},
+
+  {id:"c003",url:"https://ico.org.uk/about-the-ico/media-centre/news-and-blogs/2023/04/ico-fines-tiktok-12-7m-for-failing-to-protect-childrens-privacy/",aut:"ICO",emp:"TikTok (Reino Unido)",sec:"Tecnologia",fecha:"2023-04",imp:12700000,arts:["Art. 8","Art. 5.1.a"],tip:"base legal",grav:"Muy grave",
+   que:"TikTok procesó datos de niños menores de 13 años sin el consentimiento verificado de sus padres o tutores. La ICO estimó que la plataforma trataba datos de 1,4 millones de menores en el Reino Unido sin las garantías exigidas por la ley de protección de datos infantiles.",
+   nodebio:"No debería haber permitido el registro de menores de 13 años sin verificación parental efectiva. Los sistemas de verificación de edad deben ser robustos, no meras declaraciones.",
+   arg:"La protección de datos de menores es una prioridad de supervisión en toda Europa. Las plataformas digitales deben implementar verificación de edad efectiva, no sistemas facilmente evadibles."},
+
+  {id:"c004",url:"https://www.garanteprivacy.it/home/docweb/-/docweb-display/docweb/9870832",aut:"Garante",emp:"ChatGPT / OpenAI",sec:"IA",fecha:"2023-03",imp:0,arts:["Art. 5","Art. 6","Art. 13","Art. 17"],tip:"ia",grav:"Grave",
+   que:"El Garante italiano bloqueó temporalmente ChatGPT y abrió una investigación por tratar datos de usuarios europeos sin base legal, no informar sobre el tratamiento, carecer de mecanismos para corregir información incorrecta, y no disponer de verificación de edad para menores. OpenAI tuvo que implementar un mecanismo de oposición y mejoras antes de restablecer el servicio.",
+   nodebio:"No debería haber lanzado un servicio de IA sin evaluar la base legal del tratamiento en cada jurisdiccion. No debería haber omitido la información a los interésados ni los mecanismos para ejercer derechos.",
+   arg:"El primer caso de suspension de un sistema de IA generativa en la UE. Clave para cualquier empresa que despliegue IA: requiere base legal, transparencia sobre el tratamiento y mecanismos de derechos."},
+
+  {id:"c005",url:"https://www.cnil.fr/fr/cookies-et-traceurs-la-cnil-sanctionne-le-site-doctissimo-380-000-euros",aut:"CNIL",emp:"Doctissimo",sec:"Sanidad",fecha:"2023-01",imp:380000,arts:["Art. 7","Art. 6","Art. 35"],tip:"consentimiento",grav:"Grave",
+   que:"La plataforma de salud Doctissimo activaba cookies de seguimiento sin consentimiento previo, compartia datos de salud de usuarios con terceros anunciantes sin base legal válida, y no había realizado una EIPD pese a tratar categorías especiales de datos de salud a gran escala.",
+   nodebio:"No debería haber activado cookies ni compartido datos de salud sin consentimiento explícito. No debería haber omitido la EIPD al tratar datos de salud de forma masiva.",
+   arg:"Los portales de salud tienen una doble obligación: cumplir con cookies Y con el Art. 9 para datos de salud. La EIPD es obligatoria cuando se tratan datos sensibles a escala."},
+
+  {id:"c006",url:"https://autoriteitpersoonsgegevens.nl/nl/nieuws/ap-legt-uber-boete-op-van-290-miljoen-euro",aut:"AP",emp:"Uber Technologies",sec:"Transporte",fecha:"2023-11",imp:290000000,arts:["Art. 44","Art. 46"],tip:"transferencia",grav:"Muy grave",
+   que:"La autoridad holandesa sancióno a Uber por transferir datos de conductores europeos (documentos de identidad, datos de ubicacion, información legal) a servidores en EE.UU. sin las garantías adecuadas durante el periodo de invalidez del Privacy Shield. Uber no disponia de cláusulas contractuales tipo válidas para esas transferencias.",
+   nodebio:"No debería haber transferido datos de trabajadores a EE.UU. sin garantías válidas. Las transferencias de datos especialmente sensibles (documentos de identidad, ubicacion) exigen garantías reforzadas.",
+   arg:"Segunda mayor multa de la historia tras Meta. Uber es la sede UE de muchos servicios digitales: si eres responsable de tratamiento con sede en Holanda o Irlanda, la autoridad local puede actuar aunque los datos sean de toda Europa."},
+
+  {id:"c007",url:"https://www.aepd.es/documento/ps-00202-2023.pdf",aut:"AEPD",emp:"Iberdrola",sec:"Energía",fecha:"2023-10",imp:3000000,arts:["Art. 5.1.f","Art. 32","Art. 33"],tip:"brecha",grav:"Muy grave",
+   que:"Iberdrola sufrió una brecha de datos que afecto a más de 1,3 millones de clientes. Los datos expuestos incluian nombres, DNI, teléfonos y correos electrónicos. La empresa tardó en notificar la brecha a la AEPD y la comunicación a los afectados no fue suficientemente clara sobre el riesgo real.",
+   nodebio:"No debería haber tardado en notificar la brecha dentro del plazo de 72 horas. La comunicación a los afectados debe ser clara, directa e incluir las medidas de mitigacion recomendadas.",
+   arg:"Las brechas en empresas de suministros afectan a millones de ciudadanos. La gestión de la comunicación post-brecha es tan importante como la notificación formal a la AEPD."},
+
+  {id:"c008",url:"https://www.aepd.es/documento/ps-00182-2024.pdf",aut:"AEPD",emp:"Banco Santander",sec:"Banca",fecha:"2024-07",imp:0,arts:["Art. 5.1.f","Art. 32","Art. 33"],tip:"brecha",grav:"Grave",
+   que:"Santander sufrió una brecha en un proveedor externo que expuso datos de clientes y empleados de Espana, Chile y Uruguay, incluyendo información de cuentas bancarias y datos de RRHH. La brecha afecto a decenas de millones de personas. La AEPD abrió procedimiento sancionador por la gestión de la seguridad del proveedor.",
+   nodebio:"No debería haber dado acceso a un proveedor a bases de datos masivas sin controles de seguridad equivalentes a los propios. El contrato de encargado del tratamiento debe incluir auditorias de seguridad periódicas.",
+   arg:"Las brechas a traves de proveedores son la nueva normalidad. El responsable responde por los actos del encargado. Hay que auditar la seguridad de los proveedores críticos, no solo firmar el DPA."},
+
+  {id:"c009",url:"https://www.aepd.es/documento/ps-00010-2023.pdf",aut:"AEPD",emp:"Empresa de recursos humanos (anonimizada)",sec:"RRHH",fecha:"2024-02",imp:120000,arts:["Art. 22","Art. 13"],tip:"ia",grav:"Grave",
+   que:"Una empresa de RRHH usaba un sistema de IA para filtrar automáticamente candidatos en procesos de selección. El sistema descartaba currículos basandose en criterios algorítmicos sin informar a los candidatos de que serian sometidos a decision automatizada, sin darles la posibilidad de solicitar intervención humana y sin documentar la logica del algoritmo.",
+   nodebio:"No debería haber implementado un sistema de cribado automático sin cumplir los requisitos del Art. 22: información, derecho de revisión humana y documentacion de la logica. Las decisiones de selección de personal no pueden delegarse a un algoritmo sin garantías.",
+   arg:"El usó de IA en RRHH es un campo de supervisión prioritaria. El Art. 22 es de aplicación directa cuando una decision automatizada produce efectos jurídicos sobre una persona. Clave para clientes que usen ATS con puntuacion automática."},
+
+  {id:"c010",url:"https://www.cnil.fr/fr/amazon-france-logistique-sanctionnee-32-millions-deuros",aut:"CNIL",emp:"Amazon France Logistique",sec:"Comercio",fecha:"2023-12",imp:32000000,arts:["Art. 88","Art. 32","Art. 5.1.c"],tip:"base legal",grav:"Muy grave",
+   que:"Amazon utilizaba un sistema de gestión de almacen que monitorizaba de forma intensa y continua el rendimiento de los trabajadores: trazaba cada gesto, calculaba tiempos de inactividad de segundos y podia generar advertencias automáticas. La CNIL determinó que el sistema era excesivo y que los empleados no podían desconectarse ni tener momentos de privacidad.",
+   nodebio:"No debería haber implementado un sistema de vigilancia de trabajadores tan invasivo sin base legal proporcional. La minimizacion de datos y el principio de proporcionalidad se aplican también a la monitorizacion laboral.",
+   arg:"La vigilancia extrema de empleados mediante sistemas tecnologicos es una infracción en si misma. Cualquier sistema de monitorizacion de productividad debe superar un test de proporcionalidad."},
+
+  {id:"c011",url:"https://www.dataprotection.ie/en/news-media/press-releases/data-protection-commission-announces-conclusion-of-inquiry-into-instagram",aut:"EDPB",emp:"Meta (Instagram menores)",sec:"Tecnologia",fecha:"2023-10",imp:405000000,arts:["Art. 6","Art. 8","Art. 5"],tip:"base legal",grav:"Muy grave",
+   que:"Meta configuró por defecto las cuentas de adolescentes (13-17 años) en Instagram como cuentas públicas, exponiéndoles a contactos no deseados y permitiendo que sus datos fueran usados para publicidad comportamental. La DPC, con revisión del EDPB, determinó que el procesamiento de datos de adolescentes para publicidad carecía de base legal válida.",
+   nodebio:"No debería haber configurado cuentas de menores como públicas por defecto. No debería haber aplicado publicidad comportamental a menores. Privacy by default es una obligación especialmente crítica cuando el usuario es un menor.",
+   arg:"Privacy by default para menores significa la configuración más restrictiva disponible. El escrutinio sobre el tratamiento de datos de adolescentes en plataformas sociales seguira aumentando."},
+
+  {id:"c012",url:"https://www.aepd.es/documento/ps-00019-2024.pdf",aut:"AEPD",emp:"Worldcoin / Tools for Humanity",sec:"Tecnologia",fecha:"2024-03",imp:0,arts:["Art. 9","Art. 6","Art. 35"],tip:"ia",grav:"Grave",
+   que:"La AEPD ordeno la suspension cautelar de la recogida de datos biometricos del iris por parte de Worldcoin en Espana. La empresa recogia escaneos del iris a cambió de criptomonedas sin una base legal clara para el tratamiento de datos biometricos, sin haber realizado la EIPD preceptiva y sin informar adecuadamente a los usuarios sobre el usó real de sus datos biometricos.",
+   nodebio:"No debería haber recogido datos biometricos de forma masiva sin base legal específica del Art. 9, sin EIPD y sin una política de información transparente. Los datos biometricos son categoría especial y requieren las maximas garantías.",
+   arg:"El primer caso de suspension cautelar de un sistema biometrico de escala masiva en Espana. Clave para proyectos que usan reconocimiento facial, huella, voz o iris: la EIPD y la base legal del Art. 9 son innegociables."},
+
+  {id:"c013",url:"https://www.imy.se/nyheter/imy-alagger-spotify-att-betala-58-miljoner-kronor-i-sanktionsavgift/",aut:"DT",emp:"Spotify",sec:"Tecnologia",fecha:"2023-06",imp:5400000,arts:["Art. 15","Art. 12"],tip:"derechos",grav:"Grave",
+   que:"La autoridad sueca sancióno a Spotify por no facilitar a los usuarios información suficiente cuando ejercian su derecho de acceso. Las respuestas a las solicitudes eran incompletas, tardaban más del plazo legal y no explicaban de forma inteligible como se usaban los datos del usuario.",
+   nodebio:"No debería haber respondido a solicitudes de acceso de forma incompleta o con retrasos. El derecho de acceso implica dar información real y comprensible, no un volcado de datos ilegible.",
+   arg:"El derecho de acceso es el más ejercido por los usuarios. La calidad de la respuesta importa tanto como el plazo. Una respuesta ininteligible o incompleta es incumplimiento."},
+
+  {id:"c014",url:"https://ico.org.uk/about-the-ico/media-centre/news-and-blogs/2022/05/ico-fines-clearview-ai-inc-7-5m-for-illegally-collecting-data/",aut:"ICO",emp:"Clearview AI",sec:"Tecnologia",fecha:"2022-05",imp:7500000,arts:["Art. 5.1.a","Art. 6","Art. 14","Art. 35"],tip:"base legal",grav:"Muy grave",
+   que:"Clearview AI raspaba fotos de internet para construir una base de datos de reconocimiento facial con miles de millones de imágenes de ciudadanos europeos sin su conocimiento ni consentimiento, y la vendía a cuerpos de policía y empresas. La ICO determinó que este tratamiento carecía completamente de base legal y era una infracción sistemática.",
+   nodebio:"No debería haber construido una base de datos biometrica masiva usando web scraping sin base legal alguna. El scraping de datos públicos no convierte esos datos en datos de libre usó.",
+   arg:"Las imágenes públicas en internet NO son de libre usó a efectos de RGPD si permiten identificar a personas. Clearview fue sanciónada en varios países europeos. Clave para proyectos de reconocimiento facial."},
+
+  {id:"c015",url:"https://www.garanteprivacy.it/home/docweb/-/docweb-display/docweb/9915430",aut:"Garante",emp:"Enel Energía",sec:"Energía",fecha:"2023-06",imp:26000000,arts:["Art. 6","Art. 21","Art. 25"],tip:"spam",grav:"Muy grave",
+   que:"Enel y sus redes de venta telefónica realizaron millones de llamadas comerciales a personas registradas en el Registro de Oposición (equivalente italiano a la Robinson List). Las llamadas prosiguieron incluso después de que los afectados ejercieran formalmente su derecho de oposición.",
+   nodebio:"No debería haber realizado llamadas comerciales sin consultar el registro de exclusión antes de cada campaña. La oposición al marketing debe respetarse inmediatamente y de forma permanente en todos los canales.",
+   arg:"Las redes de venta externalizadas no eliminan la responsabilidad del responsable del tratamiento. Si contratas un call center para hacer telemarketing, eres responsable de que cumpla el RGPD."},
+
+  {id:"c016",url:"https://www.aepd.es/documento/ps-00202-2021.pdf",aut:"AEPD",emp:"Mercadona",sec:"Comercio",fecha:"2021-07",imp:2520000,arts:["Art. 9","Art. 35","Art. 25"],tip:"videovigilancia",grav:"Muy grave",
+   que:"Mercadona implemento un sistema de reconocimiento facial en varios supermercados para identificar a personas con antecedentes delictivos o con ordenes de alejamiento de sus establecimientos. La AEPD determinó que el sistema trataba datos biometricos sin base legal del Art. 9 y sin EIPD previa válida.",
+   nodebio:"No debería haber implementado reconocimiento facial sin una base legal expresa del Art. 9.2 y sin una EIPD que evaluara la proporcionalidad. El reconocimiento facial en espacios públicos accesibles es una medida de alto impacto que requiere las maximas garantías.",
+   arg:"Caso fundamental sobre reconocimiento facial en retail. La seguridad es un fin legitimo, pero el reconocimiento facial biometrico no es el único medio disponible y su proporcionalidad debe probarse antes de implementarlo."},
+
+  {id:"c017",url:"https://www.aepd.es/documento/ps-00005-2024.pdf",aut:"AEPD",emp:"Empresa IA generativa (anonimizada)",sec:"IA",fecha:"2025-01",imp:200000,arts:["Art. 6","Art. 5.1.b","Art. 13"],tip:"ia",grav:"Grave",
+   que:"Una empresa que ofrecia un asistente de IA para atención al cliente recopilaba y usaba las conversaciones de los usuarios para reentrenar sus modelos sin informarles ni obtener consentimiento para esa finalidad adicional. Los usuarios pensaban que sus conversaciones eran confidenciales y no se reutilizaban.",
+   nodebio:"No debería haber usado datos de conversaciones para fines distintos (entrenamiento de IA) sin informar a los usuarios y sin base legal para esa finalidad adicional. El reentrenamiento de modelos con datos de usuarios es un tratamiento con finalidad distinta que requiere base legal propia.",
+   arg:"Nuevo tipo de caso emergente en 2025. Cualquier empresa que use IA debe aclarar en su política de privacidad si los datos se usan para entrenar o mejorar el modelo. Si no se informa, es infracción del Art. 5.1.b y Art. 13."}
+];
+
+var sortMode = "fecha";
+var currentMode = "normal";
+
+function setMode(m) {
+  currentMode = m;
+  document.getElementById("m-normal").className = "mbtn" + (m === "normal" ? " active" : "");
+  document.getElementById("m-semantic").className = "mbtn" + (m === "semantic" ? " active-s" : "");
+  document.getElementById("plabel").textContent = m === "normal" ? "// busqueda por palabras clave" : "// busqueda normal (disponible)";
+  document.getElementById("sem-panel").style.display = m === "semantic" ? "block" : "none";
+  var srow = document.querySelector(".srow");
+  srow.style.opacity = m === "semantic" ? "0.5" : "1";
+}
+
+function setSort(s) {
+  sortMode = s;
+  document.getElementById("sort-fecha").className = "sortbtn" + (s === "fecha" ? " active" : "");
+  document.getElementById("sort-imp").className = "sortbtn" + (s === "importe" ? " active" : "");
+  buscar();
+}
+
+function setEx(t) {
+  document.getElementById("sem-q").value = t;
+  document.getElementById("sem-q").focus();
+}
+
+function fmtE(n) {
+  if (!n || n === 0) return "Aperc.";
+  if (n >= 1000000) return (n / 1000000).toFixed(1) + "M EUR";
+  if (n >= 1000) return Math.round(n / 1000) + "K EUR";
+  return n.toLocaleString("es-ES") + " EUR";
+}
+
+function fmtEF(n) {
+  if (!n || n === 0) return "Apercibimiento (sin importe economico)";
+  return n.toLocaleString("es-ES") + " EUR";
+}
+
+function fmtF(f) {
+  var p = f.split("-");
+  var meses = ["ENE","FEB","MAR","ABR","MAY","JUN","JUL","AGO","SEP","OCT","NOV","DIC"];
+  return { mes: meses[parseInt(p[1]) - 1], anyo: p[0] };
+}
+
+function badgeCls(aut) {
+  if (aut === "AEPD") return "ba";
+  if (aut === "EDPB") return "bb";
+  if (aut === "Garante") return "baut-garante";
+  if (aut === "AP") return "baut-ap";
+  if (aut === "DT") return "baut-dt";
+  return "bc";
+}
+
+function gravCls(g) {
+  if (g === "Muy grave") return "bmuy";
+  if (g === "Grave") return "bgrave";
+  return "bleve";
+}
+
+function buscar() {
+  var q = document.getElementById("query").value.trim().toLowerCase();
+  var aut = document.getElementById("f-aut").value;
+  var sec = document.getElementById("f-sec").value;
+  var tip = document.getElementById("f-tip").value;
+  var imp = document.getElementById("f-imp").value;
+  var anyo = document.getElementById("f-anyo").value;
+
+  var filtered = DB.filter(function(c) {
+    if (aut && c.aut !== aut) return false;
+    if (sec && c.sec !== sec) return false;
+    if (tip && c.tip.indexOf(tip) === -1) return false;
+    if (anyo && !c.fecha.startsWith(anyo)) return false;
+    if (imp) {
+      if (imp === "0" && c.imp !== 0) return false;
+      if (imp === "1-9999" && (c.imp < 1 || c.imp > 9999)) return false;
+      if (imp === "10000-99999" && (c.imp < 10000 || c.imp > 99999)) return false;
+      if (imp === "100000-999999" && (c.imp < 100000 || c.imp > 999999)) return false;
+      if (imp === "1000000-9999999" && (c.imp < 1000000 || c.imp > 9999999)) return false;
+      if (imp === "10000000" && c.imp < 10000000) return false;
+    }
+    if (q) {
+      var hay = [c.emp, c.sec, c.tip, c.que, c.nodebio, c.arg].concat(c.arts).join(" ").toLowerCase();
+      if (hay.indexOf(q) === -1) return false;
+    }
+    return true;
+  });
+
+  if (sortMode === "fecha") {
+    filtered.sort(function(a, b) { return b.fecha.localeCompare(a.fecha); });
+  } else {
+    filtered.sort(function(a, b) { return b.imp - a.imp; });
+  }
+
+  renderStats(filtered);
+  renderCards(filtered, false, null);
+  renderTend(filtered);
+}
+
+function renderStats(data) {
+  document.getElementById("st-tot").textContent = data.length;
+  var conImp = data.filter(function(c) { return c.imp > 0; });
+  if (conImp.length) {
+    var media = Math.round(conImp.reduce(function(a, c) { return a + c.imp; }, 0) / conImp.length);
+    var max = Math.max.apply(null, conImp.map(function(c) { return c.imp; }));
+    document.getElementById("st-med").textContent = fmtE(media);
+    document.getElementById("st-max").textContent = fmtE(max);
+  } else {
+    document.getElementById("st-med").textContent = "-";
+    document.getElementById("st-max").textContent = "-";
+  }
+  var arts = {};
+  data.forEach(function(c) {
+    c.arts.forEach(function(a) { arts[a] = (arts[a] || 0) + 1; });
+  });
+  var top = Object.keys(arts).sort(function(a, b) { return arts[b] - arts[a]; })[0];
+  document.getElementById("st-art").textContent = top || "-";
+}
+
+function cardHtml(c, idx, prefix) {
+  var f = fmtF(c.fecha);
+  var pid = (prefix || "c") + idx;
+  var artH = c.arts.map(artChip).join("");
+  var impH = c.imp === 0 ? '<div class="cimp ap">Aperc.</div>' : '<div class="cimp">' + fmtE(c.imp) + "</div>";
+  var directLink = c.url
+    ? '<a class="dlbtn" href="' + c.url + '" target="_blank" style="border-color:rgba(255,232,85,0.35);color:var(--ok);">&#8594; Ver resolución oficial</a>'
+    : '';
+  var searchLink = c.aut === "AEPD"
+    ? '<a class="dlbtn" href="https://www.aepd.es/informes-y-resoluciones/resoluciones?search=' + encodeURIComponent(c.emp) + '" target="_blank">Buscar en AEPD.es</a>'
+    : '<a class="dlbtn" href="https://www.enforcementtracker.com/?search=' + encodeURIComponent(c.emp) + '" target="_blank">Enforcement Tracker</a>';
+  var aepd_link = directLink + searchLink;
+  return '<div class="card" id="' + pid + '">' +
+    '<div class="csum" onclick="tog(\'' + pid + '\')">' +
+      '<div class="dfecha"><div class="fmes">' + f.mes + '</div><div class="fanyo">' + f.anyo + "</div></div>" +
+      '<div class="cbody">' +
+        '<div class="cmeta">' +
+          '<span class="badge ' + badgeCls(c.aut) + '">' + c.aut + "</span>" +
+          '<span class="badge bsec">' + c.sec + "</span>" +
+          '<span class="badge ' + gravCls(c.grav) + '">' + c.grav + "</span>" +
+        "</div>" +
+        '<div class="cemp">' + c.emp + "</div>" +
+        '<div class="ctip">' + c.tip.charAt(0).toUpperCase() + c.tip.slice(1) + "</div>" +
+        '<div class="artchips">' + artH + "</div>" +
+      "</div>" +
+      '<div class="cright">' + impH + '<span class="cicon" id="ico-' + pid + '">ver análisis</span></div>' +
+    "</div>" +
+    '<div class="cdet">' +
+      '<div class="dsec"><div class="dstitle w">Que ocurrio</div><div class="dblock w">' + c.que + "</div></div>" +
+      '<div class="dsec"><div class="dstitle y">Que no debería haberse hecho</div><div class="dblock y">' + c.nodebio + "</div></div>" +
+      '<div class="dsec"><div class="dstitle g">Como usar este caso con tu cliente</div><div class="dblock g">' + c.arg + "</div></div>" +
+      '<div class="dmeta">' +
+        '<div class="dmi"><span class="dmk">Importe</span><span class="dmv">' + fmtEF(c.imp) + "</span></div>" +
+        '<div class="dmi"><span class="dmk">Autoridad</span><span class="dmv">' + c.aut + "</span></div>" +
+        '<div class="dmi"><span class="dmk">Fecha</span><span class="dmv">' + c.fecha + "</span></div>" +
+      "</div>" +
+      '<div class="dlinks">' +
+        aepd_link +
+        '<a class="dlbtn" href="https://www.edpb.europa.eu/our-work-tools/consistency-findings/enforcement_es" target="_blank">Buscar en EDPB</a>' +
+      "</div>" +
+      '<div class="warn-note">Ficha orientativa. Verifica siempre el caso en la fuente oficial antes de usarlo con un cliente.</div>' +
+    "</div>" +
+  "</div>";
+}
+
+function tog(pid) {
+  var el = document.getElementById(pid);
+  var ico = document.getElementById("ico-" + pid);
+  var isOpen = el.classList.contains("open");
+  el.classList.toggle("open");
+  ico.textContent = isOpen ? "ver análisis" : "cerrar";
+}
+
+function renderCards(data, isSem, analisis) {
+  document.getElementById("cnt").textContent = data.length ? "(" + data.length + ")" : "";
+  if (!data.length) {
+    document.getElementById("output").innerHTML = '<div class="empty"><div class="ico">&#11041;</div><p>No se encontraron resoluciones con esos criterios.<br>Prueba con otros terminos o amplia los filtros.</p></div>';
+    return;
+  }
+
+  var semNote = isSem ? '<div class="sem-note">&#10022; Resultado semántico &middot; ' + data.length + " casos relevantes identificados por IA</div>" : "";
+  var semAnal = "";
+  if (isSem && analisis) {
+    var rc = analisis.riesgo === "alto" ? "risk-alto" : analisis.riesgo === "medio" ? "risk-medio" : "risk-bajo";
+    var rl = analisis.riesgo === "alto" ? "RIESGO ALTO" : analisis.riesgo === "medio" ? "RIESGO MEDIO" : "RIESGO BAJO";
+    var accs = "";
+    if (análisis.acciónes && análisis.acciónes.length) {
+      accs = '<div style="font-family:var(--font-mono);font-size:9px;color:var(--accent);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:6px;">Acciónes recomendadas</div><ul style="list-style:none;display:flex;flex-direction:column;gap:5px;">';
+      análisis.acciónes.forEach(function(a) {
+        accs += '<li style="font-size:12px;color:var(--accent2);padding-left:14px;position:relative;line-height:1.5;"><span style="position:absolute;left:0;color:var(--accent);">&#8594;</span>' + a + "</li>";
+      });
+      accs += "</ul>";
+    }
+    semAnal = '<div class="sem-analysis">' +
+      '<div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">' +
+        '<span class="risk-badge ' + rc + '">' + rl + "</span>" +
+        '<span style="font-family:var(--font-mono);font-size:10px;color:var(--muted);">Análisis de tu situación</span>' +
+      "</div>" +
+      '<p style="font-size:13px;color:var(--text);line-height:1.7;margin-bottom:10px;">' + (analisis.explicacion || "") + "</p>" +
+      accs +
+    "</div>";
+  }
+
+  var lbl = isSem
+    ? '<div class="rlabel">// casos más relevantes para tu situación</div>'
+    : '<div class="rlabel">// ' + data.length + " resoluciones &middot; " + (sortMode === "fecha" ? "más reciente primero" : "mayor importe primero") + "</div>";
+
+  var cards = data.map(function(c, i) { return cardHtml(c, i, isSem ? "s" : "c"); }).join("");
+  document.getElementById("output").innerHTML = semNote + semAnal + lbl + '<div class="results">' + cards + "</div>";
+}
+
+function renderTend(data) {
+  if (!data.length) {
+    document.getElementById("output-tend").innerHTML = '<div class="empty"><p>Realiza una busqueda para ver tendencias.</p></div>';
+    return;
+  }
+  var sec = {}, arts = {}, auts = {};
+  data.forEach(function(c) {
+    if (!sec[c.sec]) sec[c.sec] = { casos: 0, total: 0 };
+    sec[c.sec].casos++;
+    sec[c.sec].total += c.imp;
+    c.arts.forEach(function(a) { arts[a] = (arts[a] || 0) + 1; });
+    auts[c.aut] = (auts[c.aut] || 0) + 1;
+  });
+
+  var secArr = Object.keys(sec).map(function(k) { return { n: k, casos: sec[k].casos, total: sec[k].total }; }).sort(function(a, b) { return b.casos - a.casos; });
+  var artArr = Object.keys(arts).map(function(k) { return { n: k, v: arts[k] }; }).sort(function(a, b) { return b.v - a.v; }).slice(0, 8);
+  var autArr = Object.keys(auts).map(function(k) { return { n: k, v: auts[k] }; }).sort(function(a, b) { return b.v - a.v; });
+  var impArr = secArr.map(function(s) { return { n: s.n, m: s.casos > 0 ? Math.round(s.total / s.casos) : 0 }; }).sort(function(a, b) { return b.m - a.m; }).filter(function(i) { return i.m > 0; });
+
+  var mxS = Math.max.apply(null, secArr.map(function(s) { return s.casos; })) || 1;
+  var mxA = Math.max.apply(null, artArr.map(function(a) { return a.v; })) || 1;
+  var mxU = Math.max.apply(null, autArr.map(function(a) { return a.v; })) || 1;
+  var mxI = Math.max.apply(null, impArr.map(function(i) { return i.m; })) || 1;
+
+  document.getElementById("output-tend").innerHTML =
+    '<div class="tgrid">' +
+      '<div class="tcard"><div class="ttitle">// casos por sector</div>' +
+        secArr.map(function(s) {
+          return '<div class="brow"><div class="blbl">' + s.n + '</div><div class="btrack"><div class="bfill" style="width:' + Math.round(s.casos/mxS*100) + '%"></div></div><div class="bval">' + s.casos + ' casos</div></div>';
+        }).join("") +
+      "</div>" +
+      '<div class="tcard"><div class="ttitle">// articulos más infringidos</div>' +
+        artArr.map(function(a) {
+          return '<div class="brow"><div class="blbl" title="' + (ARTS[a.n] || "") + '">' + a.n + '</div><div class="btrack"><div class="bfill p" style="width:' + Math.round(a.v/mxA*100) + '%"></div></div><div class="bval">' + a.v + 'x</div></div>';
+        }).join("") +
+      "</div>" +
+      '<div class="tcard"><div class="ttitle">// casos por autoridad</div>' +
+        autArr.map(function(a) {
+          return '<div class="brow"><div class="blbl">' + a.n + '</div><div class="btrack"><div class="bfill i" style="width:' + Math.round(a.v/mxU*100) + '%"></div></div><div class="bval">' + a.v + ' casos</div></div>';
+        }).join("") +
+      "</div>" +
+      '<div class="tcard"><div class="ttitle">// sanción media por sector</div>' +
+        impArr.map(function(i) {
+          return '<div class="brow"><div class="blbl">' + i.n + '</div><div class="btrack"><div class="bfill g" style="width:' + Math.round(i.m/mxI*100) + '%"></div></div><div class="bval">' + fmtE(i.m) + '</div></div>';
+        }).join("") +
+      "</div>" +
+    "</div>";
+}
+
+function switchTab(tab, el) {
+  document.querySelectorAll(".tab").forEach(function(t) { t.classList.remove("active"); });
+  el.classList.add("active");
+  document.getElementById("tab-res").style.display = tab === "res" ? "block" : "none";
+  document.getElementById("tab-tend").style.display = tab === "tend" ? "block" : "none";
+  document.getElementById("tab-live").style.display = tab === "live" ? "block" : "none";
+}
+
+function abrirAEPD() {
+  var q = document.getElementById("query").value.trim();
+  window.open("https://www.aepd.es/informes-y-resoluciones/resoluciones" + (q ? "?search=" + encodeURIComponent(q) : ""), "_blank");
+}
+
+var _cachedApiKey = "";
+var _provider = "openrouter";
+
+var PROVIDER_CONFIG = {
+  openrouter: {
+    url: "https://openrouter.ai/api/v1/chat/completions",
+    model_sem: "anthropic/claude-haiku-4-5",
+    model_live: "perplexity/sonar",
+    has_web: true,
+    placeholder: "API Key de OpenRouter (sk-or-...)",
+    hint: 'Obtener key gratuita en <a href="https://openrouter.ai/keys" target="_blank" style="color:var(--info);">openrouter.ai/keys</a>',
+    badge: "OpenRouter",
+    live_note: "Búsqueda web en tiempo real con Perplexity/Sonar incluida."
+  },
+  openai: {
+    url: "https://api.openai.com/v1/chat/completions",
+    model_sem: "gpt-4o-mini",
+    model_live: "gpt-4o-search-preview",
+    has_web: true,
+    placeholder: "API Key de OpenAI (sk-...)",
+    hint: 'Obtener key en <a href="https://platform.openai.com/api-keys" target="_blank" style="color:var(--info);">platform.openai.com</a>',
+    badge: "OpenAI",
+    live_note: "Búsqueda web en tiempo real con GPT-4o incluida."
+  },
+  anthropic: {
+    url: "https://api.anthropic.com/v1/messages",
+    model_sem: "claude-haiku-4-5",
+    model_live: null,
+    has_web: false,
+    placeholder: "API Key de Anthropic (sk-ant-...)",
+    hint: 'Obtener key en <a href="https://console.anthropic.com/keys" target="_blank" style="color:var(--info);">console.anthropic.com</a>',
+    badge: "Anthropic",
+    live_note: '<span style="color:var(--warn);">⚠ Anthropic no tiene búsqueda web. Las novedades en tiempo real no están disponibles con este proveedor.</span>'
+  },
+  groq: {
+    url: "https://api.groq.com/openai/v1/chat/completions",
+    model_sem: "llama-3.1-8b-instant",
+    model_live: null,
+    has_web: false,
+    placeholder: "API Key de Groq (gsk_...)",
+    hint: 'Obtener key gratuita en <a href="https://console.groq.com/keys" target="_blank" style="color:var(--info);">console.groq.com</a>',
+    badge: "Groq",
+    live_note: '<span style="color:var(--warn);">⚠ Groq no tiene búsqueda web. Las novedades en tiempo real no están disponibles con este proveedor.</span>'
+  }
+};
+
+function onProviderChange() {
+  var sel = document.getElementById("ai-provider").value;
+  _provider = sel;
+  _cachedApiKey = ""; // reset key when provider changes
+  var cfg = PROVIDER_CONFIG[sel];
+  document.getElementById("sem-key").placeholder = cfg.placeholder;
+  document.getElementById("sem-key").value = "";
+  document.getElementById("sem-key-row").style.opacity = "1";
+  document.getElementById("sem-ai-badge").textContent = "IA · " + cfg.badge;
+  document.getElementById("sem-hint-link").innerHTML = cfg.hint;
+  document.getElementById("live-prov-note").innerHTML = cfg.live_note;
+  // Show/hide live search based on web capability
+  var liveBtn = document.getElementById("live-btn");
+  if (liveBtn) {
+    liveBtn.style.opacity = cfg.has_web ? "1" : "0.4";
+    liveBtn.title = cfg.has_web ? "" : "Este proveedor no soporta búsqueda web en tiempo real";
+  }
+}
+
+async function callAI(prompt, useLive) {
+  var cfg = PROVIDER_CONFIG[_provider];
+  var model = useLive ? cfg.model_live : cfg.model_sem;
+  if (!model) throw new Error("Este proveedor no soporta búsqueda en tiempo real. Usa OpenRouter u OpenAI.");
+
+  var headers = { "Content-Type": "application/json" };
+  var body;
+
+  if (_provider === "anthropic") {
+    headers["x-api-key"] = _cachedApiKey;
+    headers["anthropic-version"] = "2023-06-01";
+    headers["anthropic-dangerous-direct-browser-access"] = "true";
+    body = JSON.stringify({ model: model, max_tokens: useLive ? 2000 : 700, messages: [{ role: "user", content: prompt }] });
+  } else {
+    headers["Authorization"] = "Bearer " + _cachedApiKey;
+    if (_provider === "openrouter") {
+      headers["HTTP-Referer"] = "https://sancionador-rgpd.local";
+      headers["X-Title"] = "Rastreador Sanciones RGPD";
+    }
+    body = JSON.stringify({ model: model, max_tokens: useLive ? 2000 : 700, messages: [{ role: "user", content: prompt }] });
+  }
+
+  var res = await fetch(cfg.url, { method: "POST", headers: headers, body: body });
+  if (!res.ok) {
+    var err = await res.json().catch(function() { return {}; });
+    if (res.status === 401 || res.status === 403) {
+      _cachedApiKey = "";
+      document.getElementById("sem-key-row").style.opacity = "1";
+      
+    }
+    throw new Error((err.error && err.error.message) || ("Error HTTP " + res.status));
+  }
+  var data = await res.json();
+
+  // Extract text depending on provider format
+  if (_provider === "anthropic") {
+    return (data.content && data.content[0] && data.content[0].text) || "";
+  } else {
+    return (data.choices && data.choices[0] && data.choices[0].message && data.choices[0].message.content) || "";
+  }
+}
+
+async function buscarSem() {
+  var situación = document.getElementById("sem-q").value.trim();
+  if (!situación) { alert("Describe tu situación primero."); return; }
+
+  var apiKey = _cachedApiKey || document.getElementById("sem-key").value.trim();
+  if (!apiKey) { alert("Introduce tu API key de " + PROVIDER_CONFIG[_provider].badge + "."); document.getElementById("sem-key").focus(); return; }
+  _cachedApiKey = apiKey;
+  document.getElementById("sem-key-row").style.opacity = "0.4";
+
+  var btn = document.getElementById("sem-btn");
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span>Analizando...';
+
+  var dbSummary = DB.map(function(c) {
+    return "ID:" + c.id + "|" + c.emp + "|" + c.sec + "|" + c.tip + "|" + c.arts.join(",") + "|" + c.que.substring(0, 120);
+  }).join("\n");
+
+  var prompt = "Eres un experto en RGPD y protección de datos europeo. El usuario describe una situación real de su empresa. Identifica que casos de la base de datos son más relevantes y evalua el riesgo.\n\nSITUACION DEL USUARIO:\n" + situación + "\n\nBASE DE DATOS (ID|empresa|sector|tipo|articulos|resumen):\n" + dbSummary + "\n\nResponde SOLO con JSON válido sin texto extra ni backticks:\n{\"ids_relevantes\":[\"id1\",\"id2\",\"id3\"],\"explicacion\":\"2-3 frases sobre por que estos casos son relevantes y que riesgo tiene el usuario\",\"riesgo\":\"alto|medio|bajo\",\"acciónes\":[\"acción 1\",\"acción 2\",\"acción 3\"]}\n\nSelecciona 3-5 IDs ordenados de más a menos relevante. Prioriza casos recientes (2023-2025) cuando sean relevantes.";
+
+  try {
+    var raw = (await callAI(prompt, false)).trim();
+    raw = raw.replace(/```json\s*/g, "").replace(/```\s*/g, "").trim();
+    var match = raw.match(/\{[\s\S]*\}/);
+    if (!match) throw new Error("Respuesta inesperada de la API.");
+    var r = JSON.parse(match[0]);
+
+    var casos = (r.ids_relevantes || []).map(function(id) {
+      return DB.find(function(c) { return c.id === id; });
+    }).filter(Boolean);
+
+    renderStats(casos);
+    renderCards(casos, true, r);
+    switchTab("res", document.querySelectorAll(".tab")[0]);
+
+  } catch(e) {
+    var msg = e.message || "Error desconocido";
+    document.getElementById("output").innerHTML =
+      '<div style="background:rgba(202,113,145,0.07);border:1px solid rgba(202,113,145,0.3);border-radius:10px;padding:1.25rem;">' +
+        '<div style="font-family:var(--font-mono);font-size:12px;color:var(--bad);margin-bottom:6px;">Error en la busqueda semántica</div>' +
+        '<div style="font-size:13px;color:var(--muted);">' + msg + "</div>" +
+      "</div>";
+    switchTab("res", document.querySelectorAll(".tab")[0]);
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = "Analizar";
+  }
+}
+
+
+var _liveFiltro = "todo";
+var _liveResultados = [];
+
+function setLiveFiltro(f) {
+  _liveFiltro = f;
+  ["all","aepd","eu","ia"].forEach(function(k) {
+    document.getElementById("lf-" + k).classList.remove("active");
+  });
+  var map = { "todo": "all", "AEPD": "aepd", "UE": "eu", "IA": "ia" };
+  if (map[f]) document.getElementById("lf-" + map[f]).classList.add("active");
+}
+
+function fmtLiveImp(s) {
+  if (!s || s === "0" || s === "") return "Importe no públicado";
+  s = s.toString().replace(/[^0-9.,MKm]/g, "");
+  return s ? s + " EUR" : "Importe no públicado";
+}
+
+function renderLiveCards(items) {
+  if (!items || !items.length) {
+    document.getElementById("output-live").innerHTML =
+      '<div class="empty"><p>No se encontraron resoluciones recientes con esos criterios.<br>Prueba sin filtro o vuelve a buscar.</p></div>';
+    return;
+  }
+  var now = new Date();
+  var ts = now.toLocaleDateString("es-ES", { day:"2-digit", month:"long", year:"numeric" }) +
+    " a las " + now.toLocaleTimeString("es-ES", { hour:"2-digit", minute:"2-digit" });
+  var html = '<div class="live-ts"><span class="live-dot"></span>Última actualización: ' + ts + ' &middot; ' + items.length + ' resoluciones encontradas</div>';
+  items.forEach(function(c) {
+    var imp = c.importe ? fmtLiveImp(c.importe) : "Importe no públicado";
+    var impColor = (c.importe && c.importe !== "0") ? "var(--accent2)" : "var(--muted)";
+    html += '<div class="live-card">' +
+      '<div class="live-card-head">' +
+        '<div>' +
+          '<div class="live-card-date">' + (c.fecha || "Fecha reciente") + '</div>' +
+          '<div class="live-card-title">' + (c.empresa || "Empresa no específicada") + '</div>' +
+        '</div>' +
+        '<div style="text-align:right;flex-shrink:0;">' +
+          '<div class="live-card-imp" style="color:' + impColor + '">' + imp + '</div>' +
+        '</div>' +
+      '</div>' +
+      '<div class="live-card-meta">' +
+        '<span class="badge ' + (c.autoridad === "AEPD" ? "ba" : "bc") + '">' + (c.autoridad || "Autoridad") + '</span>' +
+        (c.sector ? '<span class="badge bsec">' + c.sector + '</span>' : '') +
+        (c.gravedad ? '<span class="badge ' + (c.gravedad === "Muy grave" ? "bmuy" : c.gravedad === "Grave" ? "bgrave" : "bleve") + '">' + c.gravedad + '</span>' : '') +
+        (c.articulos ? '<span class="badge bb">' + c.articulos + '</span>' : '') +
+      '</div>' +
+      '<div class="live-card-body">' + (c.resumen || "") + '</div>' +
+      (c.leccion ? '<div class="live-card-arg">' + c.leccion + '</div>' : '') +
+      (c.fuente ? '<div class="live-card-src">Fuente: ' + c.fuente + '</div>' : '') +
+    '</div>';
+  });
+  document.getElementById("output-live").innerHTML = html;
+}
+
+async function buscarLive() {
+  var apiKey = _cachedApiKey || document.getElementById("sem-key").value.trim();
+  if (!apiKey) { alert("Introduce primero tu API key en la pestaña de búsqueda semántica."); return; }
+  _cachedApiKey = apiKey;
+  var cfg = PROVIDER_CONFIG[_provider];
+  if (!cfg.has_web) { alert(cfg.live_note.replace(/<[^>]+>/g,"")); return; }
+
+  var btn = document.getElementById("live-btn");
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner" style="width:11px;height:11px;border-width:2px;"></span> Buscando...';
+
+  document.getElementById("output-live").innerHTML =
+    '<div class="live-loading">' +
+      '<span class="spinner"></span>' +
+      '<p>Consultando fuentes oficiales y especializadas en tiempo real...</p>' +
+      '<div class="step" id="live-step">Accediendo a AEPD, EDPB, GDPR Enforcement Tracker...</div>' +
+    '</div>';
+
+  // Construir prompt según filtro
+  var filtroStr = _liveFiltro === "AEPD" ? "Solo de la AEPD (Agencia Española de Protección de Datos)" :
+                  _liveFiltro === "UE" ? "De autoridades europeas (EDPB, CNIL, ICO, Garante, AP, BfDI, DPC, etc.) excluyendo AEPD" :
+                  _liveFiltro === "IA" ? "Relacionadas con inteligencia artificial, modelos de lenguaje, reconocimiento facial, IA generativa o automatización" :
+                  "De cualquier autoridad de protección de datos europea";
+
+  var p1 = 'Busca en internet las resoluciones y sanciones RGPD más recientes publicadas en 2025 y 2026. ' + filtroStr + '. ';
+  var p2 = 'Busca en: aepd.es/informes-y-resoluciones/resoluciones, enforcementtracker.com, edpb.europa.eu, gdprhub.eu, iabspain.es. ';
+  var p3 = 'Para cada resolución extrae: empresa, autoridad, fecha, importe, sector, articulos RGPD infringidos, resumen del caso, gravedad (Leve/Grave/Muy grave) y leccion práctica. ';
+  var p4 = 'Responde SOLO con JSON válido sin texto extra ni backticks, con este formato exacto: ';
+  var p5 = '{"resoluciones":[{"empresa":"nombre","autoridad":"AEPD","fecha":"2026-03","importe":"50000","sector":"Sanidad","articulos":"Art. 6, Art. 13","gravedad":"Grave","resumen":"descripción del caso en 2-3 frases","leccion":"leccion práctica para consultor RGPD","fuente":"nombre o URL de la fuente"}]}';
+  var p6 = ' Incluye 5-10 resoluciones reales y recientes de 2025 o 2026, las más recientes primero. Si no hay importe conocido pon 0.';
+  var prompt = p1 + p2 + p3 + p4 + p5 + p6;
+
+  try {
+    var raw = (await callAI(prompt, true)).trim();
+    raw = raw.replace(/```json\s*/g, "").replace(/```\s*/g, "").trim();
+    var match = raw.match(/\{[\s\S]*\}/);
+    if (!match) throw new Error("La IA no devolvió un JSON válido. Inténtalo de nuevo.");
+    var r = JSON.parse(match[0]);
+    _liveResultados = r.resoluciones || [];
+
+    if (!_liveResultados.length) throw new Error("No se encontraron resoluciones recientes. Prueba sin filtro.");
+    renderLiveCards(_liveResultados);
+
+  } catch(e) {
+    document.getElementById("output-live").innerHTML =
+      '<div style="background:rgba(202,113,145,0.07);border:1px solid rgba(202,113,145,0.3);border-radius:10px;padding:1.25rem;">' +
+        '<div style="font-family:var(--font-mono);font-size:12px;color:var(--bad);margin-bottom:8px;">Error en la busqueda en tiempo real</div>' +
+        '<div style="font-size:13px;color:var(--muted);margin-bottom:8px;">' + (e.message || "Error desconocido") + '</div>' +
+        '<div style="font-size:11px;color:var(--muted);">Asegurate de que tu API key de OpenRouter tiene credito y acceso al modelo <code style="color:var(--info)">perplexity/sonar</code>. Puedes activarlo en <a href="https://openrouter.ai/perplexity/sonar" target="_blank" style="color:var(--info);">openrouter.ai/perplexity/sonar</a>.</div>' +
+      '</div>';
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = "Buscar ahora";
+  }
+}
+
+// Inicializar
+renderStats(DB);
+document.getElementById("st-tot").textContent = DB.length + "+";
+document.getElementById("query").addEventListener("keydown", function(e) { if (e.key === "Enter") buscar(); });
+// Sync API keys between panels
+</script>
+</body>
+</html>
